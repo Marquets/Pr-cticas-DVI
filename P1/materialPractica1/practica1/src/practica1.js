@@ -80,6 +80,7 @@ MemoryGame = function(gs) {
 				}
 				break;
 				case "zeppelin" :
+
 				if (zeppelin < 2) {
 					 carta = new MemoryGameCard("zeppelin");
 					 this.array_cartas[cartas_insert] = carta;
@@ -97,13 +98,23 @@ MemoryGame = function(gs) {
 
 		}
 	}
+
 	this.draw() {
+		CustomGraphicServer.drawMessage(this.mensaje);
+		for (var i = this.array_cartas.length - 1; i >= 0; i--) {
+			CustomGraphicServer.draw(this.array_cartas[i], i);
+		}
+
 
 	}
 	this.loop() {
-
+		while(1) {
+			setInterval(this.draw(),16);
+		}
 	}
-	this.onClick() {
+	this.onClick(cardId) {
+
+		var carta_pulsada = this.array_cartas[cardId];
 
 	}
 }
