@@ -19,6 +19,7 @@ MemoryGame = function(gs) {
 
 	this.carta_a_comparar= null;
 	this.parejas_found = 0;
+	this.esperando = false;
 
 	this.initGame = function(){
 		var carta;
@@ -138,37 +139,39 @@ MemoryGame = function(gs) {
 		//}
 	}
 	this.onClick = function(cardId) {
+		if(!this.esperando){
+			var that = this;
+			if( cardId !== null && this.array_cartas[cardId].estado == 0){
+				this.array_cartas[cardId].flip();
 
-		var that = this;
-		if(this.array_cartas[cardId].estado == 0){
-			this.array_cartas[cardId].flip();
-
-			if(this.carta_a_comparar === null){
-				this.carta_a_comparar = this.array_cartas[cardId];
-			}else{
-				if(this.carta_a_comparar.compareTo(that.array_cartas[cardId])){
-						this.carta_a_comparar.found();        //por lo que las doy la vuelta a las dos
-						this.array_cartas[cardId].found();
-						this.carta_a_comparar = null;
-						this.parejas_found++;
-						
-						if(this.parejas_found < 8){
-							this.mensaje = "Match found!!";
-						}else{
-							this.mensaje = "You win!!";
-						}
-					}else{
-
-						this.mensaje = "Try again";
-						setTimeout(function(){
-							that.carta_a_comparar.flip();        //por lo que las doy la vuelta a las dos
-							that.array_cartas[cardId].flip();
-							that.carta_a_comparar = null;
+				if(this.carta_a_comparar === null){
+					this.carta_a_comparar = this.array_cartas[cardId];
+				}else{
+					if(this.carta_a_comparar.compareTo(that.array_cartas[cardId])){
+							this.carta_a_comparar.found();        //por lo que las doy la vuelta a las dos
+							this.array_cartas[cardId].found();
+							this.carta_a_comparar = null;
+							this.parejas_found++;
 							
-						},1000);
-					}
+							if(this.parejas_found < 8){
+								this.mensaje = "Match found!!";
+							}else{
+								this.mensaje = "You win!!";
+							}
+						}else{
+							this.esperando=true;
+							this.mensaje = "Try again";
+							setTimeout(function(){
+								that.carta_a_comparar.flip();        //por lo que las doy la vuelta a las dos
+								that.array_cartas[cardId].flip();
+								that.carta_a_comparar = null;
+								that.esperando = false;
+								
+							},1000);
+						}
+				}
 			}
-		}		
+		}	
 	}
 }
 
