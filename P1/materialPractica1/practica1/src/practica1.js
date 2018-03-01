@@ -16,6 +16,10 @@ MemoryGame = function(gs) {
 	this.num_cartas = 0;
 	this.mensaje = "Memory Game";
 	this.sergrafico = gs;
+
+	this.carta_a_comparar= null;
+	this.parejas_found = 0;
+
 	this.initGame = function(){
 		var carta;
 		var cartas_insert = 0;
@@ -134,53 +138,37 @@ MemoryGame = function(gs) {
 		//}
 	}
 	this.onClick = function(cardId) {
-		var carta = this.array_cartas[cardId];
-		setInterval(function(){
-			carta.flip();
-		},1000);
-		
-		var length = this.array_cartas.length();
 
-		var i = 0;
-		var found = false;
+		var that = this;
+		if(this.array_cartas[cardId].estado == 0){
+			this.array_cartas[cardId].flip();
 
-		while(i < cardId && !found) {  //desde la carta 0 hasta la carta que he seleccionado
-			if(this.array_cartas[i].estado == 1){ //si la carta está boca arriba
-				if(carta.compareTo(this.array_cartas[i])){ //si tienen el mismo nombre
-					carta.found();                  //se han encontrado las cartas
-					this.array_cartas[i].found();
-				}else{								//sino, es que no son iguales
-					setInterval(function(){
-						carta.flip();  
-						this.array_cartas[i].flip();        
-					},1000);		        //por lo que las doy la vuelta a las dos
-					
-				}
+			if(this.carta_a_comparar === null){
+				this.carta_a_comparar = this.array_cartas[cardId];
+			}else{
+				if(this.carta_a_comparar.compareTo(that.array_cartas[cardId])){
+						this.carta_a_comparar.found();        //por lo que las doy la vuelta a las dos
+						this.array_cartas[cardId].found();
+						this.carta_a_comparar = null;
+						this.parejas_found++;
+						
+						if(this.parejas_found < 8){
+							this.mensaje = "Match found!!";
+						}else{
+							this.mensaje = "You win!!";
+						}
+					}else{
 
-				found = true;
+						this.mensaje = "Try again";
+						setTimeout(function(){
+							that.carta_a_comparar.flip();        //por lo que las doy la vuelta a las dos
+							that.array_cartas[cardId].flip();
+							that.carta_a_comparar = null;
+							
+						},1000);
+					}
 			}
-			i++;
-		}
-
-		i = cardId + 1; 
-
-		//si ya se encontró una carta previamente(found = true), no entrará en el while -> solo puede haber dos cartas boca arriba, la seleccionada y la anterior
-		while(i < length && !found) {  //desde la siguiente carta a carId hasta la carta que he seleccionado
-			if(this.array_cartas[i].estado == 1){ //si la carta está boca arriba
-				if(carta.compareTo(this.array_cartas[i])){ //si tienen el mismo nombre
-					carta.found();                  //se han encontrado las cartas
-					this.array_cartas[i].found();
-				}else{	
-					setInterval(function(){							//sino, es que no son iguales
-					carta.flip();                  //por lo que las doy la vuelta a las dos
-					this.array_cartas[i].flip();
-					},1000);
-				}
-
-				found = true;
-			}
-			i++;
-		}
+		}		
 	}
 }
 
@@ -197,11 +185,10 @@ MemoryGameCard = function(id) {
 	this.nombre = id;
 	this.estado = 0;  //0 -> boca abajo | 1 -> boca arriba | 2 -> encomntrada
 	this.flip = function(){
-		var that = this;
-		if(that.estado == 1){ //si está boca arriba la pongo boca abajo
-			that.estado = 0;
+		if(this.estado == 1){ //si está boca arriba la pongo boca abajo
+			this.estado = 0;
 		}else{
-			that.estado = 1; //sino, la pongo boca arriba pues estaba boca abajo
+			this.estado = 1; //sino, la pongo boca arriba pues estaba boca abajo
 		}
 	}
 	this.found = function(){
@@ -217,11 +204,10 @@ MemoryGameCard = function(id) {
 	}
 
 	this.draw = function(gs, pos){
-		var that = this;
-
-		if(that.estado == 1){
-			gs.draw(that.nombre, pos);
-		}else if(that.estado == 0){
+		
+		if(this.estado == 1 || this.estado == 2){
+			gs.draw(this.nombre, pos);
+		}else if(this.estado == 0){
 			gs.draw("back", pos);
 		}
 	}
