@@ -1,7 +1,7 @@
 var sprites = {
  camarero: { sx: 513, sy: 0, w: 54, h: 64, frames: 1 },
  cliente: { sx: 513, sy: 67, w: 31, h: 35, frames: 1 },
- empty_beer: { sx: 513, sy: 143, w: 23, h: 22, frames: 1 },
+ empty_beer: { sx: 510, sy: 140, w: 26, h: 25, frames: 1 },
  beer: { sx: 513, sy: 103, w: 22, h: 28, frames: 1 },
  fondo: {sx: 0, sy: 479, w: 514, h: 481, frames: 1 }
 };
@@ -22,7 +22,9 @@ var OBJECT_PLAYER = 1,
     OBJECT_PLAYER_PROJECTILE = 2,
     OBJECT_ENEMY = 4,
     OBJECT_ENEMY_PROJECTILE = 8,
-    OBJECT_POWERUP = 16;
+    OBJECT_POWERUP = 16,
+    OBJECT_BEER = 32,
+    OBJECT_CLIENTE = 64;
 
 var startGame = function() {
   var ua = navigator.userAgent.toLowerCase();
@@ -58,7 +60,7 @@ var playGame = function() {
   var board = new GameBoard();
   board.add(new Fondo);
   board.add(new Player);
-  board.add(new Cliente(111,90));
+  board.add(new Cliente(111,80));
   //board.add(new Level(level1));
   Game.setBoard(3,board);
   //Game.setBoard(5,new GamePoints(0));
@@ -144,7 +146,7 @@ var Player = function(){
       else if(Game.keys['espacio'] ) {  //&& this.reloadBeer < 0)
          this.reloadBeer = this.reloadTimeBeer;
 
-         this.board.add(new Beer(this.x - 10,this.y));
+         this.board.add(new Beer(this.x - 10,this.y + 8));
       }   
       
     }
@@ -155,6 +157,20 @@ var Player = function(){
 
 Player.prototype = new Sprite();
 
+
+var Glass = function(x,y){
+ this.setup('empty_beer',{ vx: -70});
+  this.x = x;
+  this.y = y;
+
+}
+Glass.prototype = new Sprite();
+
+Glass.prototype.step = function(dt)  {
+  this.x -= this.vx * dt;
+ 
+};
+
 var Beer = function(x,y){
  this.setup('beer',{ vx: -70});
   this.x = x;
@@ -162,15 +178,19 @@ var Beer = function(x,y){
 
 }
 Beer.prototype = new Sprite();
+Beer.prototype.type = OBJECT_BEER;
+
 Beer.prototype.step = function(dt)  {
-  this.x += this.vx * dt;  //var collision = this.board.collide(this,OBJECT_ENEMY);
- /* if(collision) {
-    collision.hit(this.damage);
+  this.x += this.vx * dt;
+  var collision = this.board.collide(this,OBJECT_CLIENTE);
+  if(collision) {
+    //collision.hit(this.damage);
     this.board.remove(this);
-  } else*/
+    this.board.add(new Glass(this.x, this.y));
+    
+  }
    
 };
-
 
 var Cliente = function(x,y){
  this.setup('cliente',{ vx: 30});
@@ -179,12 +199,15 @@ var Cliente = function(x,y){
 
 }
 Cliente.prototype = new Sprite();
+Cliente.prototype.type = OBJECT_CLIENTE;
+
 Cliente.prototype.step = function(dt)  {
-  this.x += this.vx * dt;  //var collision = this.board.collide(this,OBJECT_ENEMY);
- /* if(collision) {
-    collision.hit(this.damage);
+  this.x += this.vx * dt;
+  var collision = this.board.collide(this,OBJECT_BEER);
+  if(collision) {
+    //collision.hit(this.damage);
     this.board.remove(this);
-  } else*/
+  }
    
 };
 
