@@ -7,8 +7,7 @@ var sprites = {
 };
 
 var enemies = {
-  straight: { x: 0,   y: -50, sprite: 'enemy_ship', health: 10, 
-              E: 100 },
+  straight: { x: 27,   y: 90, sprite: 'cliente', E: 100 },
   ltr:      { x: 0,   y: -100, sprite: 'enemy_purple', health: 10, 
               B: 75, C: 1, E: 100, missiles: 2  },
   circle:   { x: 250,   y: -50, sprite: 'enemy_circle', health: 10, 
@@ -43,14 +42,14 @@ var startGame = function() {
 
 var level1 = [
  // Start,   End, Gap,  Type,   Override
-  [ 0,      4000,  500, 'step' ],
-  [ 6000,   13000, 800, 'ltr' ],
-  [ 10000,  16000, 400, 'circle' ],
+  [ 0,      4000,  500, 'straight' ],
+  [ 6000,   13000, 800, 'straight' ],
+  [ 10000,  16000, 400, 'straight' ],
   [ 17800,  20000, 500, 'straight', { x: 50 } ],
   [ 18200,  20000, 500, 'straight', { x: 90 } ],
   [ 18200,  20000, 500, 'straight', { x: 10 } ],
-  [ 22000,  25000, 400, 'wiggle', { x: 150 }],
-  [ 22000,  25000, 400, 'wiggle', { x: 100 }]
+  [ 22000,  25000, 400, 'straight', { x: 150 }],
+  [ 22000,  25000, 400, 'straight', { x: 100 }]
 ];
 
 
@@ -59,7 +58,8 @@ var playGame = function() {
   var board = new GameBoard();
   board.add(new Fondo);
   board.add(new Player);
-  //board.add(new Level(level1,winGame));
+  board.add(new Cliente(111,90));
+  //board.add(new Level(level1));
   Game.setBoard(3,board);
   //Game.setBoard(5,new GamePoints(0));
 };
@@ -76,75 +76,134 @@ Fondo.prototype.step = function(dt) {
 }
 
 
+//Cambiar swithes
 var Player = function(){
-  this.setup("camarero", {reloadTime: 0.25});
+  this.setup("camarero", {reloadTime: 0.1, reloadTimeBeer: 0.5});
   this.x = 325;
   this.y = 90;
   this.reload = this.reloadTime;
-
+  this.reloadBeer = this.reloadTimeBeer;
   this.step = function(dt) {
     
     this.reload-=dt;
+    this.reloadBeer-=dt;
     if(this.reload < 0) {
       this.reload = this.reloadTime;
-      if(Game.keys['arriba']) {
-      if(this.x != 421){
-        this.x += 32;
-      }else{
-        this.x = 325;
-      }
+      this.reloadBeer = this.reloadTimeBeer;
+      if(Game.keys['abajo']) {
+        if(this.x != 421){
+          this.x += 32;
+        }else{
+         this.x = 325;
+        }
 
-      switch(this.y){
-        case 90:
-          this.y += 95;
-        break;
-        case 185:
-          this.y += 96;
-        break;
-        case 281:
-          this.y += 96;
-        break;
-        case 377:
-          this.y = 90;
-        break;
-        default:
+        switch(this.y){
+          case 90:
+            this.y += 95;
+          break;
+          case 185:
+            this.y += 96;
+          break;
+          case 281:
+            this.y += 96;
+          break;
+          case 377:
+            this.y = 90;
+          break;
+          default:
 
 
-      }
-
-    }
-    else if(Game.keys['abajo']) {
-      if(this.x != 325){
-        this.x -= 32;
-      }else{
-        this.x = 421;
-      }
-
-      switch(this.y){
-        case 90:
-          this.y = 377;
-        break;
-        case 185:
-          this.y -= 95;
-        break;
-        case 281:
-          this.y -= 96;
-        break;
-        case 377:
-          this.y -= 96;
-        break;
-        default:
-
+        }
 
       }
-    }
+      else if(Game.keys['arriba']) {
+        if(this.x != 325){
+          this.x -= 32;
+        }else{
+          this.x = 421;
+        }
+
+        switch(this.y){
+          case 90:
+            this.y = 377;
+          break;
+          case 185:
+            this.y -= 95;
+          break;
+          case 281:
+            this.y -= 96;
+          break;
+          case 377:
+            this.y -= 96;
+          break;
+          default:
+
+
+        }
+      }
+      else if(Game.keys['espacio'] ) {  //&& this.reloadBeer < 0)
+         this.reloadBeer = this.reloadTimeBeer;
+
+         this.board.add(new Beer(this.x - 10,this.y));
+      }   
+      
     }
 
   };
 };
-
+    
 
 Player.prototype = new Sprite();
+
+var Beer = function(x,y){
+ this.setup('beer',{ vx: -70});
+  this.x = x;
+  this.y = y;
+
+}
+Beer.prototype = new Sprite();
+Beer.prototype.step = function(dt)  {
+  this.x += this.vx * dt;  //var collision = this.board.collide(this,OBJECT_ENEMY);
+ /* if(collision) {
+    collision.hit(this.damage);
+    this.board.remove(this);
+  } else*/
+   
+};
+
+
+var Cliente = function(x,y){
+ this.setup('cliente',{ vx: 30});
+  this.x = x;
+  this.y = y;
+
+}
+Cliente.prototype = new Sprite();
+Cliente.prototype.step = function(dt)  {
+  this.x += this.vx * dt;  //var collision = this.board.collide(this,OBJECT_ENEMY);
+ /* if(collision) {
+    collision.hit(this.damage);
+    this.board.remove(this);
+  } else*/
+   
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 var winGame = function() {
@@ -302,7 +361,7 @@ Enemy.prototype.step = function(dt) {
   this.vy = this.E + this.F * Math.sin(this.G * this.t + this.H);
 
   this.x += this.vx * dt;
-  this.y += this.vy * dt;
+   this.y += this.vy * dt;
 
   var collision = this.board.collide(this,OBJECT_PLAYER);
   if(collision) {
