@@ -24,7 +24,8 @@ var OBJECT_PLAYER = 1,
     OBJECT_ENEMY_PROJECTILE = 8,
     OBJECT_POWERUP = 16,
     OBJECT_BEER = 32,
-    OBJECT_CLIENTE = 64;
+    OBJECT_CLIENTE = 64,
+    OBJECT_DEADZONE = 128;
 
 var startGame = function() {
   var ua = navigator.userAgent.toLowerCase();
@@ -61,6 +62,8 @@ var playGame = function() {
   board.add(new Fondo);
   board.add(new Player);
   board.add(new Cliente(111,80));
+  board.add(new DeadZone(325,90));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)
+  //board.add(new DeadZone(100,90));    //deadzone de la mesa superior izquierda(donde se dibuja el cliente)  CON ESTA LINEA DE CODIGO NO FUNCIONA
   //board.add(new Level(level1));
   Game.setBoard(3,board);
   //Game.setBoard(5,new GamePoints(0));
@@ -154,8 +157,32 @@ var Player = function(){
   };
 };
     
-
 Player.prototype = new Sprite();
+
+
+var DeadZone = function(x, y){
+
+  this.x = x;
+  this.y = y;
+
+  this.draw = function(){
+    var canvas = document.getElementById("canvas1a");
+    document.getElementById("canvas1a").style.background_color = "blue";  //no funciona
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = "blue";
+    ctx.fillRect(325, 90, 30, 100);
+
+  };
+
+  this.draw();
+
+}
+DeadZone.prototype = new Sprite();
+DeadZone.prototype.type = OBJECT_DEADZONE;
+
+DeadZone.prototype.step = function(dt)  {
+     
+};
 
 
 var Glass = function(x,y){
@@ -205,6 +232,12 @@ Cliente.prototype.step = function(dt)  {
   this.x += this.vx * dt;
   var collision = this.board.collide(this,OBJECT_BEER);
   if(collision) {
+    //collision.hit(this.damage);
+    this.board.remove(this);
+  }
+
+  var collision2 = this.board.collide(this,OBJECT_DEADZONE);   //si funciona
+  if(collision2) {
     //collision.hit(this.damage);
     this.board.remove(this);
   }
