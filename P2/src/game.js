@@ -62,8 +62,18 @@ var playGame = function() {
   board.add(new Fondo);
   board.add(new Player);
   board.add(new Cliente(111,80));
-  board.add(new DeadZone(325,90));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)
-  //board.add(new DeadZone(100,90));    //deadzone de la mesa superior izquierda(donde se dibuja el cliente)  CON ESTA LINEA DE CODIGO NO FUNCIONA
+  board.add(new Cliente(79,175));
+  board.add(new Cliente(47,271));
+  board.add(new Cliente(15,367));
+  board.add(new DeadZone(340,62,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
+  board.add(new DeadZone(105,62,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
+  board.add(new DeadZone(372,157,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
+  board.add(new DeadZone(73,157,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
+  board.add(new DeadZone(404,253,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
+  board.add(new DeadZone(41,253,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
+  board.add(new DeadZone(436,349,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
+  board.add(new DeadZone(9,349,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
+  
   //board.add(new Level(level1));
   Game.setBoard(3,board);
   //Game.setBoard(5,new GamePoints(0));
@@ -80,10 +90,12 @@ Fondo.prototype = new Sprite();
 Fondo.prototype.step = function(dt) {
 }
 
+var pos_player_der = [325, 357, 389, 421];
+var pos_player_izq = [90, 185, 281, 377];
 
 //Cambiar swithes
 var Player = function(){
-  this.setup("camarero", {reloadTime: 0.1, reloadTimeBeer: 0.5});
+  this.setup("camarero", {reloadTime: 0.2, reloadTimeBeer: 0.4});
   this.x = 325;
   this.y = 90;
   this.reload = this.reloadTime;
@@ -94,7 +106,6 @@ var Player = function(){
     this.reloadBeer-=dt;
     if(this.reload < 0) {
       this.reload = this.reloadTime;
-      this.reloadBeer = this.reloadTimeBeer;
       if(Game.keys['abajo']) {
         if(this.x != 421){
           this.x += 32;
@@ -146,7 +157,9 @@ var Player = function(){
 
         }
       }
-      else if(Game.keys['espacio'] ) {  //&& this.reloadBeer < 0)
+
+         
+      else if(Game.keys['espacio'] && this.reloadBeer < 0) {  //&& this.reloadBeer < 0)
          this.reloadBeer = this.reloadTimeBeer;
 
          this.board.add(new Beer(this.x - 10,this.y + 8));
@@ -159,24 +172,22 @@ var Player = function(){
     
 Player.prototype = new Sprite();
 
+// ----------------------------------------- DEAD ZONE ----------------------------------------------
 
-var DeadZone = function(x, y){
+var DeadZone = function(x, y, w, h){
 
   this.x = x;
   this.y = y;
+  this.w = w;
+  this.h = h;
 
-  this.draw = function(){
-    var canvas = document.getElementById("canvas1a");
-    document.getElementById("canvas1a").style.background_color = "blue";  //no funciona
-    var ctx = canvas.getContext("2d");
-    ctx.fillStyle = "blue";
-    ctx.fillRect(325, 90, 30, 100);
 
+  this.draw = function(ctx){
+    ctx.fillStyle = "lightblue";
+    ctx.fillRect(this.x, this.y, this.w, this.h);
   };
 
-  this.draw();
-
-}
+};
 DeadZone.prototype = new Sprite();
 DeadZone.prototype.type = OBJECT_DEADZONE;
 
@@ -190,20 +201,25 @@ var Glass = function(x,y){
   this.x = x;
   this.y = y;
 
-}
+};
 Glass.prototype = new Sprite();
 
 Glass.prototype.step = function(dt)  {
   this.x -= this.vx * dt;
+
+  var collision = this.board.collide(this,OBJECT_DEADZONE);
+  if(collision) {
+    this.board.remove(this);    
+  }
  
 };
 
 var Beer = function(x,y){
- this.setup('beer',{ vx: -70});
+ this.setup('beer',{ vx: -70, reloadBeer: 0, reloadTimeBeer: 0.75});
   this.x = x;
   this.y = y;
 
-}
+};
 Beer.prototype = new Sprite();
 Beer.prototype.type = OBJECT_BEER;
 
@@ -212,29 +228,30 @@ Beer.prototype.step = function(dt)  {
   var collision = this.board.collide(this,OBJECT_CLIENTE);
   if(collision) {
     //collision.hit(this.damage);
+    collision.hit();
     this.board.remove(this);
     this.board.add(new Glass(this.x, this.y));
     
+  }
+
+  var collision2 = this.board.collide(this,OBJECT_DEADZONE);
+  if(collision2) {
+    this.board.remove(this);    
   }
    
 };
 
 var Cliente = function(x,y){
- this.setup('cliente',{ vx: 30});
+ this.setup('cliente',{ vx: 50});
   this.x = x;
   this.y = y;
 
-}
+};
 Cliente.prototype = new Sprite();
 Cliente.prototype.type = OBJECT_CLIENTE;
 
 Cliente.prototype.step = function(dt)  {
   this.x += this.vx * dt;
-  var collision = this.board.collide(this,OBJECT_BEER);
-  if(collision) {
-    //collision.hit(this.damage);
-    this.board.remove(this);
-  }
 
   var collision2 = this.board.collide(this,OBJECT_DEADZONE);   //si funciona
   if(collision2) {
@@ -243,6 +260,13 @@ Cliente.prototype.step = function(dt)  {
   }
    
 };
+
+Cliente.prototype.hit = function(dt)  {
+
+    this.board.remove(this);
+  
+};
+
 
 
 
