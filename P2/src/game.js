@@ -61,10 +61,11 @@ var playGame = function() {
   var board = new GameBoard();
   board.add(new Fondo);
   board.add(new Player);
-  board.add(new Cliente(111,80));
+ /* board.add(new Cliente(111,80));
   board.add(new Cliente(79,175));
   board.add(new Cliente(47,271));
-  board.add(new Cliente(15,367));
+  board.add(new Cliente(15,367)); */
+  board.add(new Spawner(4,null,null,null));
   board.add(new DeadZone(340,62,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
   board.add(new DeadZone(105,62,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
   board.add(new DeadZone(372,157,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
@@ -269,13 +270,28 @@ Cliente.prototype.hit = function(dt)  {
 
 
 
+/*--------------------SPAWNER-----------------------*/
+// lógica para crear clientes en una determinada barra del bar
 
+var Pair = function(a,b) {
+	this.x = a;
+	this.y = b;
+}
 
+var Spawner = function(n,t,f,r) {
 
+  var array = [new Pair(111,80),new Pair(79,175), new Pair(47,175), new Pair(15,367)];
+  for (var i = 0; i < n; i++) {
+  	board.add(new Cliente(array[i].x,array[i].y));
+  }
+  
+};
 
+Spawner.prototype.step = function()  {
 
+};
 
-
+Spawner.prototype = new Cliente();
 
 
 
