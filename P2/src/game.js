@@ -55,6 +55,10 @@ var level1 = [
   [ 22000,  25000, 400, 'straight', { x: 100 }]
 ];
 
+var Pair = function(a,b) {
+	this.x = a;
+	this.y = b;
+}
 
 
 var playGame = function() {
@@ -65,7 +69,15 @@ var playGame = function() {
   board.add(new Cliente(79,175));
   board.add(new Cliente(47,271));
   board.add(new Cliente(15,367)); */
-  board.add(new Spawner(4,null,null,null));
+  var n = 4;
+  var array = [new Pair(111,80),new Pair(79,175),new Pair(47,271),new Pair(15,367)];
+  for (i = 0; i < n; i++) {
+  	var par = new Pair(0,0);
+  	par = array[Math.floor(Math.random()*array.length)];
+  	var x = par.x;
+  	var y = par.y;
+  	board.add(new Spawner(new Cliente(x,y),n,8,3));
+  }
   board.add(new DeadZone(340,62,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
   board.add(new DeadZone(105,62,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
   board.add(new DeadZone(372,157,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
@@ -273,25 +285,43 @@ Cliente.prototype.hit = function(dt)  {
 /*--------------------SPAWNER-----------------------*/
 // lógica para crear clientes en una determinada barra del bar
 
-var Pair = function(a,b) {
-	this.x = a;
-	this.y = b;
-}
 
-var Spawner = function(n,t,f,r) {
 
-  var array = [new Pair(111,80),new Pair(79,175), new Pair(47,175), new Pair(15,367)];
-  for (var i = 0; i < n; i++) {
-  	board.add(new Cliente(array[i].x,array[i].y));
-  }
+var Spawner = function(cliente,numClientes,frecuencia,delay) {
+
+	this.instancia = cliente;
+	this.num = numClientes;
+	this.freq = frecuencia;
+	this.freqTime = frecuencia;
+	this.delay = delay;
+  
   
 };
+Spawner.prototype = new Sprite();
 
-Spawner.prototype.step = function()  {
+Spawner.prototype.draw = function(ctx) {}
 
-};
+Spawner.prototype.step = function(dt)  {
 
-Spawner.prototype = new Cliente();
+  	this.delay -= dt;
+
+  	if (this.delay < 0 && this.num > 0) {
+
+  		this.freq -= dt;
+  		if (this.freq < 0) {
+  			this.freq = this.freqTime;
+
+  			var client = Object.create(this.instancia);
+
+  			this.board.add(client);
+  			--this.contClients;
+
+  		}
+  	}
+
+}
+
+
 
 
 
