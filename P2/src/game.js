@@ -69,7 +69,7 @@ var playGame = function() {
   board.add(new Cliente(79,175));
   board.add(new Cliente(47,271));
   board.add(new Cliente(15,367)); */
-  var n = 4;
+/*  var n = 4;
   var array = [new Pair(111,80),new Pair(79,175),new Pair(47,271),new Pair(15,367)];
   for (i = 0; i < n; i++) {
   	var par = new Pair(0,0);
@@ -77,7 +77,7 @@ var playGame = function() {
   	var x = par.x;
   	var y = par.y;
   	board.add(new Spawner(new Cliente(x,y),n,8,3));
-  }
+  }*/
   board.add(new DeadZone(340,62,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
   board.add(new DeadZone(105,62,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
   board.add(new DeadZone(372,157,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
@@ -86,7 +86,10 @@ var playGame = function() {
   board.add(new DeadZone(41,253,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
   board.add(new DeadZone(436,349,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
   board.add(new DeadZone(9,349,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
-  
+  board.add(new Spawner(new Cliente(111,80),1,6,5));
+  board.add(new Spawner(new Cliente(79,175),1,3,15));
+  board.add(new Spawner(new Cliente(47,271),1,6,8));
+  board.add(new Spawner(new Cliente(15,367),1,3,1));
   //board.add(new Level(level1));
   Game.setBoard(3,board);
   //Game.setBoard(5,new GamePoints(0));
