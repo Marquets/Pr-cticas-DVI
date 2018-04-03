@@ -31,15 +31,15 @@ var startGame = function() {
   var ua = navigator.userAgent.toLowerCase();
 
   // Only 1 row of stars
-  if(ua.match(/android/)) {
+  /*if(ua.match(/android/)) {
     Game.setBoard(0,new Starfield(50,0.6,100,true));
   } else {
     Game.setBoard(0,new Starfield(20,0.4,100,true));
     Game.setBoard(1,new Starfield(50,0.6,100));
     Game.setBoard(2,new Starfield(100,1.0,50));
-  }  
-  Game.setBoard(3,new TitleScreen("Alien Invasion", 
-                                  "Press fire to start playing",
+  }  */
+  Game.setBoard(3,new TitleScreen("Tapper Root Beer", 
+                                  "Press space to start playing",
                                   playGame));
 };
 
@@ -72,21 +72,12 @@ var playGame = function() {
 /*  var n = 4;
   var array = [new Pair(111,80),new Pair(79,175),new Pair(47,271),new Pair(15,367)];
   for (i = 0; i < n; i++) {
-<<<<<<< HEAD
     var par = new Pair(0,0);
     par = array[Math.floor(Math.random()*array.length)];
     var x = par.x;
     var y = par.y;
     board.add(new Spawner(new Cliente(x,y),n,8,3));
-  }
-=======
-  	var par = new Pair(0,0);
-  	par = array[Math.floor(Math.random()*array.length)];
-  	var x = par.x;
-  	var y = par.y;
-  	board.add(new Spawner(new Cliente(x,y),n,8,3));
   }*/
->>>>>>> 3232eff3f1bfbd10b468a7c588c97407a2882b3a
   board.add(new DeadZone(340,62,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
   board.add(new DeadZone(105,62,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
   board.add(new DeadZone(372,157,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
@@ -97,8 +88,8 @@ var playGame = function() {
   board.add(new DeadZone(9,349,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
   board.add(new Spawner(new Cliente(111,80),1,6,5));
   board.add(new Spawner(new Cliente(79,175),1,3,15));
-  board.add(new Spawner(new Cliente(47,271),1,6,8));
-  board.add(new Spawner(new Cliente(15,367),1,3,1));
+  board.add(new Spawner(new Cliente(47,271),1,8,8));
+  board.add(new Spawner(new Cliente(15,367),1,10,1));
   //board.add(new Level(level1));
   Game.setBoard(3,board);
   //Game.setBoard(5,new GamePoints(0));
@@ -234,7 +225,8 @@ Glass.prototype.step = function(dt)  {
 
   var collision = this.board.collide(this,OBJECT_DEADZONE);
   if(collision) {
-    this.board.remove(this);    
+    this.board.remove(this);
+        
   }
  
 };
@@ -262,12 +254,13 @@ Beer.prototype.step = function(dt)  {
   var collision2 = this.board.collide(this,OBJECT_DEADZONE);
   if(collision2) {
     this.board.remove(this);    
+    loseGame();
   }
    
 };
 
 var Cliente = function(x,y){
- this.setup('cliente',{ vx: 50});
+ this.setup('cliente',{ vx: 30});
   this.x = x;
   this.y = y;
 
@@ -282,6 +275,7 @@ Cliente.prototype.step = function(dt)  {
   if(collision2) {
     //collision.hit(this.damage);
     this.board.remove(this);
+    loseGame();
   }
    
 };
@@ -346,13 +340,13 @@ Spawner.prototype.step = function(dt)  {
 
 var winGame = function() {
   Game.setBoard(3,new TitleScreen("You win!", 
-                                  "Press fire to play again",
+                                  "Press space to play again",
                                   playGame));
 };
 
 var loseGame = function() {
   Game.setBoard(3,new TitleScreen("You lose!", 
-                                  "Press fire to play again",
+                                  "Press space to play again",
                                   playGame));
 };
 
@@ -575,6 +569,6 @@ Explosion.prototype.step = function(dt) {
 };
 
 window.addEventListener("load", function() {
-  Game.initialize("game",sprites,playGame);
+  Game.initialize("game",sprites,startGame);
 });
 

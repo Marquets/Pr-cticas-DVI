@@ -167,8 +167,8 @@ var SpriteSheet = new function() {
 var TitleScreen = function TitleScreen(title,subtitle,callback) {
   var up = false;
   this.step = function(dt) {
-    if(!Game.keys['fire']) up = true;
-    if(up && Game.keys['fire'] && callback) callback();
+    if(!Game.keys['espacio']) up = true;
+    if(up && Game.keys['espacio'] && callback) callback();
   };
 
   this.draw = function(ctx) {
