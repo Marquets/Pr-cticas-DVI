@@ -56,8 +56,8 @@ var level1 = [
 ];
 
 var Pair = function(a,b) {
-	this.x = a;
-	this.y = b;
+  this.x = a;
+  this.y = b;
 }
 
 
@@ -72,11 +72,11 @@ var playGame = function() {
   var n = 4;
   var array = [new Pair(111,80),new Pair(79,175),new Pair(47,271),new Pair(15,367)];
   for (i = 0; i < n; i++) {
-  	var par = new Pair(0,0);
-  	par = array[Math.floor(Math.random()*array.length)];
-  	var x = par.x;
-  	var y = par.y;
-  	board.add(new Spawner(new Cliente(x,y),n,8,3));
+    var par = new Pair(0,0);
+    par = array[Math.floor(Math.random()*array.length)];
+    var x = par.x;
+    var y = par.y;
+    board.add(new Spawner(new Cliente(x,y),n,8,3));
   }
   board.add(new DeadZone(340,62,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
   board.add(new DeadZone(105,62,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
@@ -289,11 +289,11 @@ Cliente.prototype.hit = function(dt)  {
 
 var Spawner = function(cliente,numClientes,frecuencia,delay) {
 
-	this.instancia = cliente;
-	this.num = numClientes;
-	this.freq = frecuencia;
-	this.freqTime = frecuencia;
-	this.delay = delay;
+  this.instancia = cliente;
+  this.num = numClientes;
+  this.freq = frecuencia;
+  this.freqTime = frecuencia;
+  this.delay = delay;
   
   
 };
@@ -303,21 +303,21 @@ Spawner.prototype.draw = function(ctx) {}
 
 Spawner.prototype.step = function(dt)  {
 
-  	this.delay -= dt;
+    this.delay -= dt;
 
-  	if (this.delay < 0 && this.num > 0) {
+    if (this.delay < 0 && this.num > 0) {
 
-  		this.freq -= dt;
-  		if (this.freq < 0) {
-  			this.freq = this.freqTime;
+      this.freq -= dt;
+      if (this.freq < 0) {
+        this.freq = this.freqTime;
 
-  			var client = Object.create(this.instancia);
+        var client = Object.create(this.instancia);
 
-  			this.board.add(client);
-  			--this.contClients;
+        this.board.add(client);
+        --this.contClients;
 
-  		}
-  	}
+      }
+    }
 
 }
 
@@ -565,5 +565,4 @@ Explosion.prototype.step = function(dt) {
 window.addEventListener("load", function() {
   Game.initialize("game",sprites,playGame);
 });
-
 
