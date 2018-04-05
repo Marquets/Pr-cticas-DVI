@@ -86,10 +86,10 @@ var playGame = function() {
   board.add(new DeadZone(41,253,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
   board.add(new DeadZone(436,349,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
   board.add(new DeadZone(9,349,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
-  board.add(new Spawner(new Cliente(111,80),1,6,5));
-  board.add(new Spawner(new Cliente(79,175),1,3,15));
-  board.add(new Spawner(new Cliente(47,271),1,8,8));
-  board.add(new Spawner(new Cliente(15,367),1,10,1));
+  board.add(new Spawner(new Cliente(111,80,10),1,3,5));
+  board.add(new Spawner(new Cliente(79,175,80),3,5,7));
+  board.add(new Spawner(new Cliente(47,271,10),1,7,8));
+  board.add(new Spawner(new Cliente(15,367,10),1,4,1));
   //board.add(new Level(level1));
   Game.setBoard(3,board);
   //Game.setBoard(5,new GamePoints(0));
@@ -187,6 +187,7 @@ var Player = function(){
 };
     
 Player.prototype = new Sprite();
+Player.prototype.type = OBJECT_PLAYER;	
 
 // ----------------------------------------- DEAD ZONE ----------------------------------------------
 
@@ -224,10 +225,18 @@ Glass.prototype.step = function(dt)  {
   this.x -= this.vx * dt;
 
   var collision = this.board.collide(this,OBJECT_DEADZONE);
-  if(collision) {
+  var collisionP = this.board.collide(this,OBJECT_PLAYER);
+
+  if(collisionP) {
     this.board.remove(this);
         
   }
+  else if(collision) {
+    this.board.remove(this);
+    loseGame();
+        
+  }
+
  
 };
 
@@ -259,8 +268,8 @@ Beer.prototype.step = function(dt)  {
    
 };
 
-var Cliente = function(x,y){
- this.setup('cliente',{ vx: 30});
+var Cliente = function(x,y,z){
+ this.setup('cliente',{ vx: z});
   this.x = x;
   this.y = y;
 
@@ -320,7 +329,7 @@ Spawner.prototype.step = function(dt)  {
         var client = Object.create(this.instancia);
 
         this.board.add(client);
-        --this.contClients;
+        --this.num;
 
       }
     }
@@ -328,8 +337,53 @@ Spawner.prototype.step = function(dt)  {
 }
 
 
+/*------------------------GAME MANAGER ---------------------------------*/
 
+var GameManager = new function(){
+	  this.numJarrasVacias = 0;
+	  this.board = [];
+	  this.clientesServidos = 0;
+	  this.totalClientes = 0;
+	  
 
+	  this.aumentarJarrasVacias = function(){
+	    this.numJarrasVacias++;
+	  };
+
+	  this.restaJarrasVacias = function(){
+	  	--this.numJarrasVacias;
+	    if(this.numJarrasVacias == 0 && this.clientesServidos == this.totalClientes){
+	      winGame();
+	      console.log("win");
+	    }
+	  };
+
+	  this.loose = function(){
+	    loseGame();
+	  }
+	  this.aumentarClientes = function(numClient){
+	    this.totalClientes += numClient;
+	  };
+	  this.aumentarClientesServidos = function(){
+	    ++this.clientesServidos;
+	  };
+	  
+	  this.addBoard = function(layer,board){
+	    this.board[layer] = board;
+	  }
+	  this.setActivate = function(layer, activate){
+	    this.board[layer].setActivate(activate);
+	    Game.setBoard(layer,this.board[layer]);
+	  }
+	  this.reset = function(){
+	    this.clientesServidos = 0;
+	    this.totalClientes = 0;
+	    this.numJarrasVacias = 0;
+	  }
+	};
+	window.addEventListener("load", function() {
+	  Game.initialize("game",sprites,startGame);
+});
 
 
 
