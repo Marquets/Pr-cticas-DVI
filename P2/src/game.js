@@ -9,18 +9,6 @@ var sprites = {
  fondo: {sx: 0, sy: 479, w: 514, h: 481, frames: 1 }
 };
 
-var enemies = {
-  straight: { x: 27,   y: 90, sprite: 'cliente', E: 100 },
-  ltr:      { x: 0,   y: -100, sprite: 'enemy_purple', health: 10, 
-              B: 75, C: 1, E: 100, missiles: 2  },
-  circle:   { x: 250,   y: -50, sprite: 'enemy_circle', health: 10, 
-              A: 0,  B: -100, C: 1, E: 20, F: 100, G: 1, H: Math.PI/2 },
-  wiggle:   { x: 100, y: -50, sprite: 'enemy_bee', health: 20, 
-              B: 50, C: 4, E: 100, firePercentage: 0.001, missiles: 2 },
-  step:     { x: 0,   y: -50, sprite: 'enemy_circle', health: 10,
-              B: 150, C: 1.2, E: 75 }
-};
-
 
 var OBJECT_PLAYER = 1,
     OBJECT_PLAYER_PROJECTILE = 2,
@@ -47,24 +35,17 @@ var startGame = function() {
                                   playGame));
 };
 
-var level1 = [
- // Start,   End, Gap,  Type,   Override
-  [ 0,      4000,  500, 'straight' ],
-  [ 6000,   13000, 800, 'straight' ],
-  [ 10000,  16000, 400, 'straight' ],
-  [ 17800,  20000, 500, 'straight', { x: 50 } ],
-  [ 18200,  20000, 500, 'straight', { x: 90 } ],
-  [ 18200,  20000, 500, 'straight', { x: 10 } ],
-  [ 22000,  25000, 400, 'straight', { x: 150 }],
-  [ 22000,  25000, 400, 'straight', { x: 100 }]
-];
 
 var Pair = function(a,b) {
   this.x = a;
   this.y = b;
 }
 
-var puntos = 0;
+
+
+var pos_player_x = [325, 357, 389, 421];
+var pos_player_y = [90, 185, 281, 377];
+
 var pos_cliente_x = [111, 79, 47, 15];
 var pos_cliente_y = [80, 175, 271, 367];
 
@@ -73,6 +54,18 @@ function getRandomArbitrary(min, max) {
   return Math.floor(Math.random() * (max - min) + min);
 }
 
+function generateRandomArray(min, max){
+    var random = [];
+    for(var i = 0;i<max ; i++){
+        var temp = Math.floor(Math.random()*(max - min) + min);
+        if(random.indexOf(temp) == -1){
+            random.push(temp);
+        }
+        else
+         i--;
+    }
+    return random;
+}
 
 var playGame = function() {
   var board = new GameBoard();
@@ -86,21 +79,24 @@ var playGame = function() {
   board.add(new DeadZone(41,253,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
   board.add(new DeadZone(436,349,5,50));      //deadzone de la mesa superior derecha(donde se dibuja el cliente)  x: +15 de la pos del player, y: -28 de la pos del player
   board.add(new DeadZone(9,349,5,50));  //  deadzone de la mesa superior izquierda(donde se dibuja el cliente)  x: -6 de la pos del cliente, y: igual que en la derecha
+  board.add(new drawPuntos());
+  var random = generateRandomArray(0, 4);
   var contClientes = 0;
-  for(var i = 0; i < 4; i++){
-   var numMesa =  getRandomArbitrary(0, 4);
-   var numClientes =  getRandomArbitrary(1, 5);
-   contClientes += numClientes;
-   var velocidad =  getRandomArbitrary(30, 75);
-   board.add(new Spawner(new Cliente(pos_cliente_x[numMesa],pos_cliente_y[numMesa],50),numClientes,5,i+3));
-  }
-//board.add(new Spawner(new Cliente(111,80,50),3,5,2));
+  var pos = 0;
 
-  GameManager.startGameManager(10);
-  //board.add(new Level(level1));
+  for(var i = 0; i < 4; i++){
+    pos = random[i];
+    var numClientes =  getRandomArbitrary(1, 5);
+    var velocidad =  getRandomArbitrary(30, 75);
+    board.add(new Spawner(new Cliente(pos_cliente_x[pos],pos_cliente_y[pos],velocidad),3,6,i+3));
+  }
+  
+  GameManager.startGameManager(12);
   Game.setBoard(3,board);
-  //Game.setBoard(5,new GamePoints(0));
+  
 };
+
+// ----------------------------------------- BACKGROUND ----------------------------------------------
 
 var Fondo = function(){
   this.setup("fondo");
@@ -113,10 +109,9 @@ Fondo.prototype = new Sprite();
 Fondo.prototype.step = function(dt) {
 }
 
-var pos_player_x = [325, 357, 389, 421];
-var pos_player_y = [90, 185, 281, 377];
 
-//Cambiar swithes
+// ----------------------------------------- PLAYER ----------------------------------------------
+
 var Player = function(){
   this.setup("camarero", {reloadTime: 0.2, reloadTimeBeer: 0.4});
   this.x = 325;
@@ -130,58 +125,30 @@ var Player = function(){
     if(this.reload < 0) {
       this.reload = this.reloadTime;
       if(Game.keys['abajo']) {
-        if(this.x != 421){
-          this.x += 32;
+
+        if(this.posArray < 3){
+          this.posArray++;
+          this.x =  pos_player_x[this.posArray];
+          this.y =  pos_player_y[this.posArray];
         }else{
-         this.x = 325;
-        }
-
-        switch(this.y){
-          case 90:
-            this.y += 95;
-          break;
-          case 185:
-            this.y += 96;
-          break;
-          case 281:
-            this.y += 96;
-          break;
-          case 377:
-            this.y = 90;
-          break;
-          default:
-
-
+          this.posArray = 0;
+          this.x =  pos_player_x[this.posArray];
+          this.y =  pos_player_y[this.posArray];
         }
 
       }
       else if(Game.keys['arriba']) {
-        if(this.x != 325){
-          this.x -= 32;
+
+        if(this.posArray > 0){
+          this.posArray--;
+          this.x =  pos_player_x[this.posArray];
+          this.y =  pos_player_y[this.posArray];
         }else{
-          this.x = 421;
+          this.posArray = 3;
+          this.x =  pos_player_x[this.posArray];
+          this.y =  pos_player_y[this.posArray];
         }
-
-        switch(this.y){
-          case 90:
-            this.y = 377;
-          break;
-          case 185:
-            this.y -= 95;
-          break;
-          case 281:
-            this.y -= 96;
-          break;
-          case 377:
-            this.y -= 96;
-          break;
-          default:
-
-
-        }
-      }
-
-         
+      }         
       else if(Game.keys['espacio'] && this.reloadBeer < 0) {  //&& this.reloadBeer < 0)
          this.reloadBeer = this.reloadTimeBeer;
 
@@ -194,7 +161,36 @@ var Player = function(){
 };
     
 Player.prototype = new Sprite();
-Player.prototype.type = OBJECT_PLAYER;	
+Player.prototype.type = OBJECT_PLAYER;
+
+
+/*------------------------ PUNTOS ---------------------------------*/
+
+var Puntos = new function(){
+  this.puntos = 0;
+
+  this.setScore = function(puntos){
+    this.puntos += puntos;
+  }
+
+  this.resetScore = function(){
+    this.puntos = 0;
+  }
+
+};
+
+
+var drawPuntos = function(){
+  this.draw = function(ctx){
+    ctx.font = "20px";
+    ctx.fillStyle = "white";
+    ctx.fillText("Puntuación: " + Puntos.puntos.toString(),30,25);
+  };
+};
+
+drawPuntos.prototype = new Sprite();
+drawPuntos.prototype.step = function(dt)  {  
+};
 
 // ----------------------------------------- DEAD ZONE ----------------------------------------------
 
@@ -207,8 +203,9 @@ var DeadZone = function(x, y, w, h){
 
 
   this.draw = function(ctx){
-    ctx.fillStyle = "lightblue";
-    ctx.fillRect(this.x, this.y, this.w, this.h);
+    //ctx.fillStyle = "lightblue";
+    //ctx.fillRect(this.x, this.y, this.w, this.h);
+    
   };
 
 };
@@ -219,6 +216,7 @@ DeadZone.prototype.step = function(dt)  {
      
 };
 
+// ----------------------------------------- GLASS ----------------------------------------------
 
 var Glass = function(x,y){
  this.setup('empty_beer',{ vx: -70});
@@ -237,6 +235,7 @@ Glass.prototype.step = function(dt)  {
   if(collisionP) {
     this.board.remove(this);
     GameManager.restaJarrasVacias();
+    GameManager.checkWin();
         
   }
   else if(collision) {
@@ -247,6 +246,8 @@ Glass.prototype.step = function(dt)  {
 
  
 };
+
+// ----------------------------------------- BEER ----------------------------------------------
 
 var Beer = function(x,y){
  this.setup('beer',{ vx: -70, reloadBeer: 0, reloadTimeBeer: 0.75});
@@ -277,6 +278,8 @@ Beer.prototype.step = function(dt)  {
    
 };
 
+// ----------------------------------------- CLIENTE ----------------------------------------------
+
 var Cliente = function(x,y,z){
  this.setup('cliente',{ vx: z});
   this.x = x;
@@ -301,7 +304,7 @@ Cliente.prototype.step = function(dt)  {
 Cliente.prototype.hit = function(dt)  {
     GameManager.restarClientes();
     this.board.remove(this);
-  
+
 };
 
 
@@ -339,298 +342,75 @@ Spawner.prototype.step = function(dt)  {
 
         this.board.add(client);
         this.delay = this.freqTime;
-        this.num--;
-
+        
       }
+      this.num--;
+
     }
 
 }
 
 
-/*------------------------GAME MANAGER ---------------------------------*/
+
+/*------------------------ GAME MANAGER ---------------------------------*/
 
 var GameManager = new function(){
-	  this.numJarrasVacias = 0;
-	  this.totalClientes = 0;
-	  
+    this.numJarrasVacias = 0;
+    this.totalClientes = 0;
+    
     this.startGameManager = function(numClientes) {
       this.totalClientes = numClientes;
     }
 
-	  this.aumentarJarrasVacias = function(){
-	    this.numJarrasVacias++;
-	    puntos += 50;
-	  };
+    this.aumentarJarrasVacias = function(){
+      this.numJarrasVacias++;
+      Puntos.setScore(50);
+    };
 
-	  this.restaJarrasVacias = function(){
-	     this.numJarrasVacias--;
-	    if(this.numJarrasVacias == 0 && this.totalClientes == 0){
-	      winGame();
-	    }
-	     puntos += 100;
-	  };
-
-	  this.loose = function(){
-	    loseGame();
-	  }
-	  this.restarClientes = function(){
-	    this.totalClientes--;
-       if(this.numJarrasVacias == 0 && this.totalClientes == 0){
+    this.checkWin = function(){
+      if(this.numJarrasVacias == 0 && this.totalClientes == 0){
         winGame();
       }
-	  };
-	 
-	
-	  this.reset = function() {
-	    this.totalClientes = 0;
-	    this.numJarrasVacias = 0;
-	    puntos = 0;
-	  }
-	};
-	window.addEventListener("load", function() {
-	  Game.initialize("game",sprites,startGame);
-});
+    }
 
+    this.restaJarrasVacias = function(){
+       this.numJarrasVacias--;
+      
+       Puntos.setScore(100);
+    };
 
+    this.loose = function(){
+      loseGame();
+    }
+    this.restarClientes = function(){
+      this.totalClientes--;
+    };
+   
+  
+    this.reset = function() {
+      this.totalClientes = 0;
+      this.numJarrasVacias = 0;
+      Puntos.resetScore();
+    }
+  };
 
-
-
-
-
+// ----------------------------------------------------------------------------------------
 
 var winGame = function() {
-  Game.setBoard(3,new TitleScreen("You win!", 
-  	 							  "Puntuación: " + puntos.toString(),
-                                  "Press space to play again",
+    Game.setBoard(3,new TitleScreen("You win!", 
+                    "Puntuación: " + Puntos.puntos.toString() + ", Press space to play again",
                                   playGame));
+    Puntos.resetScore();
 };
 
 var loseGame = function() {
+
   Game.setBoard(3,new TitleScreen("You lose!", 
-  								  "Puntuación: " + puntos.toLocaleString(),
-                                  "Press space to play again",
+                    "Puntuación: " + Puntos.puntos.toLocaleString() + ", Press space to play again",
                                   playGame));
-};
-
-var Starfield = function(speed,opacity,numStars,clear) {
-
-  // Set up the offscreen canvas
-  var stars = document.createElement("canvas");
-  stars.width = Game.width; 
-  stars.height = Game.height;
-  var starCtx = stars.getContext("2d");
-
-  var offset = 0;
-
-  // If the clear option is set, 
-  // make the background black instead of transparent
-  if(clear) {
-    starCtx.fillStyle = "#000";
-    starCtx.fillRect(0,0,stars.width,stars.height);
-  }
-
-  // Now draw a bunch of random 2 pixel
-  // rectangles onto the offscreen canvas
-  starCtx.fillStyle = "#FFF";
-  starCtx.globalAlpha = opacity;
-  for(var i=0;i<numStars;i++) {
-    starCtx.fillRect(Math.floor(Math.random()*stars.width),
-                     Math.floor(Math.random()*stars.height),
-                     2,
-                     2);
-  }
-
-  // This method is called every frame
-  // to draw the starfield onto the canvas
-  this.draw = function(ctx) {
-    var intOffset = Math.floor(offset);
-    var remaining = stars.height - intOffset;
-
-    // Draw the top half of the starfield
-    if(intOffset > 0) {
-      ctx.drawImage(stars,
-                0, remaining,
-                stars.width, intOffset,
-                0, 0,
-                stars.width, intOffset);
-    }
-
-    // Draw the bottom half of the starfield
-    if(remaining > 0) {
-      ctx.drawImage(stars,
-              0, 0,
-              stars.width, remaining,
-              0, intOffset,
-              stars.width, remaining);
-    }
-  };
-
-  // This method is called to update
-  // the starfield
-  this.step = function(dt) {
-    offset += dt * speed;
-    offset = offset % stars.height;
-  };
-};
-
-var PlayerShip = function() { 
-  this.setup('ship', { vx: 0, reloadTime: 0.25, maxVel: 200 });
-
-  this.reload = this.reloadTime;
-  this.x = Game.width/2 - this.w / 2;
-  this.y = Game.height - Game.playerOffset - this.h;
-
-  this.step = function(dt) {
-    if(Game.keys['left']) { this.vx = -this.maxVel; }
-    else if(Game.keys['right']) { this.vx = this.maxVel; }
-    else { this.vx = 0; }
-
-    this.x += this.vx * dt;
-
-    if(this.x < 0) { this.x = 0; }
-    else if(this.x > Game.width - this.w) { 
-      this.x = Game.width - this.w;
-    }
-
-    this.reload-=dt;
-    if(Game.keys['fire'] && this.reload < 0) {
-      Game.keys['fire'] = false;
-      this.reload = this.reloadTime;
-
-      this.board.add(new PlayerMissile(this.x,this.y+this.h/2));
-      this.board.add(new PlayerMissile(this.x+this.w,this.y+this.h/2));
-    }
-  };
-};
-
-PlayerShip.prototype = new Sprite();
-PlayerShip.prototype.type = OBJECT_PLAYER;
-
-PlayerShip.prototype.hit = function(damage) {
-  if(this.board.remove(this)) {
-    loseGame();
-  }
-};
-
-
-var PlayerMissile = function(x,y) {
-  this.setup('missile',{ vy: -700, damage: 10 });
-  this.x = x - this.w/2;
-  this.y = y - this.h; 
-};
-
-PlayerMissile.prototype = new Sprite();
-PlayerMissile.prototype.type = OBJECT_PLAYER_PROJECTILE;
-
-PlayerMissile.prototype.step = function(dt)  {
-  this.y += this.vy * dt;
-  var collision = this.board.collide(this,OBJECT_ENEMY);
-  if(collision) {
-    collision.hit(this.damage);
-    this.board.remove(this);
-  } else if(this.y < -this.h) { 
-      this.board.remove(this); 
-  }
-};
-
-
-var Enemy = function(blueprint,override) {
-  this.merge(this.baseParameters);
-  this.setup(blueprint.sprite,blueprint);
-  this.merge(override);
-};
-
-Enemy.prototype = new Sprite();
-Enemy.prototype.type = OBJECT_ENEMY;
-
-Enemy.prototype.baseParameters = { A: 0, B: 0, C: 0, D: 0, 
-                                   E: 0, F: 0, G: 0, H: 0,
-                                   t: 0, reloadTime: 0.75, 
-                                   reload: 0 };
-
-Enemy.prototype.step = function(dt) {
-  this.t += dt;
-
-  this.vx = this.A + this.B * Math.sin(this.C * this.t + this.D);
-  this.vy = this.E + this.F * Math.sin(this.G * this.t + this.H);
-
-  this.x += this.vx * dt;
-   this.y += this.vy * dt;
-
-  var collision = this.board.collide(this,OBJECT_PLAYER);
-  if(collision) {
-    collision.hit(this.damage);
-    this.board.remove(this);
-  }
-
-  if(Math.random() < 0.01 && this.reload <= 0) {
-    this.reload = this.reloadTime;
-    if(this.missiles == 2) {
-      this.board.add(new EnemyMissile(this.x+this.w-2,this.y+this.h));
-      this.board.add(new EnemyMissile(this.x+2,this.y+this.h));
-    } else {
-      this.board.add(new EnemyMissile(this.x+this.w/2,this.y+this.h));
-    }
-
-  }
-  this.reload-=dt;
-
-  if(this.y > Game.height ||
-     this.x < -this.w ||
-     this.x > Game.width) {
-       this.board.remove(this);
-  }
-};
-
-Enemy.prototype.hit = function(damage) {
-  this.health -= damage;
-  if(this.health <=0) {
-    if(this.board.remove(this)) {
-      Game.points += this.points || 100;
-      this.board.add(new Explosion(this.x + this.w/2, 
-                                   this.y + this.h/2));
-    }
-  }
-};
-
-var EnemyMissile = function(x,y) {
-  this.setup('enemy_missile',{ vy: 200, damage: 10 });
-  this.x = x - this.w/2;
-  this.y = y;
-};
-
-EnemyMissile.prototype = new Sprite();
-EnemyMissile.prototype.type = OBJECT_ENEMY_PROJECTILE;
-
-EnemyMissile.prototype.step = function(dt)  {
-  this.y += this.vy * dt;
-  var collision = this.board.collide(this,OBJECT_PLAYER)
-  if(collision) {
-    collision.hit(this.damage);
-    this.board.remove(this);
-  } else if(this.y > Game.height) {
-      this.board.remove(this); 
-  }
-};
-
-
-
-var Explosion = function(centerX,centerY) {
-  this.setup('explosion', { frame: 0 });
-  this.x = centerX - this.w/2;
-  this.y = centerY - this.h/2;
-};
-
-Explosion.prototype = new Sprite();
-
-Explosion.prototype.step = function(dt) {
-  this.frame++;
-  if(this.frame >= 12) {
-    this.board.remove(this);
-  }
+  Puntos.resetScore();
 };
 
 window.addEventListener("load", function() {
   Game.initialize("game",sprites,startGame);
 });
-
