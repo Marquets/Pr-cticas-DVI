@@ -64,6 +64,7 @@ var Pair = function(a,b) {
   this.y = b;
 }
 
+var puntos = 0;
 var pos_cliente_x = [111, 79, 47, 15];
 var pos_cliente_y = [80, 175, 271, 367];
 
@@ -358,6 +359,7 @@ var GameManager = new function(){
 
 	  this.aumentarJarrasVacias = function(){
 	    this.numJarrasVacias++;
+	    puntos += 50;
 	  };
 
 	  this.restaJarrasVacias = function(){
@@ -365,6 +367,7 @@ var GameManager = new function(){
 	    if(this.numJarrasVacias == 0 && this.totalClientes == 0){
 	      winGame();
 	    }
+	     puntos += 100;
 	  };
 
 	  this.loose = function(){
@@ -381,6 +384,7 @@ var GameManager = new function(){
 	  this.reset = function() {
 	    this.totalClientes = 0;
 	    this.numJarrasVacias = 0;
+	    puntos = 0;
 	  }
 	};
 	window.addEventListener("load", function() {
@@ -396,12 +400,14 @@ var GameManager = new function(){
 
 var winGame = function() {
   Game.setBoard(3,new TitleScreen("You win!", 
+  	 							  "Puntuación: " + puntos.toString(),
                                   "Press space to play again",
                                   playGame));
 };
 
 var loseGame = function() {
   Game.setBoard(3,new TitleScreen("You lose!", 
+  								  "Puntuación: " + puntos.toLocaleString(),
                                   "Press space to play again",
                                   playGame));
 };
