@@ -3,27 +3,43 @@ var game = function() {
 	// the Sprites, Scenes, Input and 2D module. The 2D module
 	// includes the `TileLayer` class as well as the `2d` componet.
 	var Q = window.Q = Quintus()
-		.include("Sprites, Scenes, Input, 2D, Anim, Touch, UI")
+		.include("Sprites, Scenes, Input, 2D, Anim, Touch, UI, TMX")
 		// Maximize this game to whatever the size of the browser is
 		.setup({width:320, height:480})
 		// And turn on default input controls and touch input (for UI)
-		.controls().touch()
-		.enableSound();
-
-		
-	Q.loadTMX("level.tmx", function() {
-	 	Q.stageScene("startGame");
-	});
+		.controls().touch();
+		//.enableSound();
 
 
-	Q.scene("level1",function(stage) {
+
+	/*Q.scene("level1",function(stage) {
 	 	Q.stageTMX("level.tmx",stage);
 
 	 	//var mario = stage.insert(new Q.Mario({ x: 150, y: 380 }));
 
 	 	stage.add("viewport");
 	 	stage.centerOn(150,380);	
-	 	//stage.viewport.offsetX=-100;			 
+	 	stage.viewport.offsetX=-100;			 
 	});
 
+	Q.loadTMX("level.tmx, tiles.png", function() {
+	 	Q.stageScene("startGame");
+	});*/
+
+	Q.scene("level1",function(stage) {
+		Q.stageTMX("level.tmx",stage);
+		stage.add("viewport");
+	 	stage.centerOn(150,380);	
+	 	stage.viewport.offsetX=-100;
+	});
+
+	Q.loadTMX("level.tmx", function() {
+		Q.stageScene("level1");
+	});
+
+
+
+
 };
+
+window.addEventListener("load", game);
