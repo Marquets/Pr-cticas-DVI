@@ -55,7 +55,7 @@ var game = function() {
 			if(this.p.y > 600){
 				Q.stageScene('level1');
 			}
-		}
+		},
 	});
 
 
@@ -72,7 +72,9 @@ var game = function() {
 
 			this.on("bump.left,bump.right,bump.bottom",function(collision) {
 				if(collision.obj.isA("Mario")) {
-					Q.stageScene("level1");
+					//Q.stageScene("level1");
+					Q.stop();
+					document.
 					collision.obj.destroy();
 				}
 			});
@@ -108,7 +110,8 @@ var game = function() {
 
 			this.on("bump.left,bump.right,bump.bottom",function(collision) {
 				if(collision.obj.isA("Mario")) {
-					Q.stageScene("level1");
+					//Q.stageScene("level1");
+					Q.stop();
 					collision.obj.destroy();
 				}
 			});
