@@ -43,13 +43,6 @@ var game = function() {
 				
 			});*/
 
-			this.on("bump.bottom",function(collision) {
-				if(collision.obj.isA("Goomba")) {
-
-					this.p.vy = -300;					
-				}
-			});
-
 		},
 
 		step: function(p) {
@@ -86,8 +79,8 @@ var game = function() {
 
 
 	Q.animations('mario', {
-		run_right: { frames: [3,2,1], rate: 1/6, loop:false, next: "stand_right" }, 
-		run_left: { frames: [17,16,15], rate:1/6, loop:false, next: "stand_left" },
+		run_right: { frames: [3,2,1], rate: 1/6, loop:false}, 
+		run_left: { frames: [17,16,15], rate:1/6, loop:false},
 		stand_right: { frames: [0] },
 		stand_left: { frames: [14] },
 		jump_right: { frames: [4], loop: false, rate:1, next: "stand_right" },
@@ -117,8 +110,14 @@ var game = function() {
 			// and give the user a "hop"
 			this.on("bump.top",function(collision) {
 				if(collision.obj.isA("Mario")) {
-					this.destroy();
+					this.play("dieG");
+					collision.obj.p.vy = -300;
 				}
+			});
+
+			this.on("goombaD", function() {
+				//una vez que termine la animacion del goomba aplastado destruimos al goomba
+				this.destroy();
 			});
 
 			this.play("move");
@@ -132,7 +131,7 @@ var game = function() {
 
 	Q.animations('goomba', {
 		move: { frames: [1,0], rate: 1/2}, 
-		dieE: { frames: [2], rate:1/2, loop: false}
+		dieG: { frames: [2], rate:1/2, loop: false, trigger: "goombaD"}
 	});
 
 	Q.Sprite.extend("Bloopa", {
@@ -156,33 +155,38 @@ var game = function() {
 			// and give the user a "hop"
 			this.on("bump.top",function(collision) {
 				if(collision.obj.isA("Mario")) {
-					this.play("dieE");
-					this.destroy();
+					this.play("dieB");
 					collision.obj.p.vy = -300;
 				}
 			});
+
+			this.on("bloopaD",function(collision) {
+				this.destroy();
+			});
+
+			this.play("move");
 
 		},
 
 		step: function(p) {
 			if(this.p.vy == 0){
 				this.p.vy = -Math.floor(Math.random() * (800 - 100) + 100);
-				this.play("move");
+				//this.play("move");
 			}
 		}	
 	});
 
 	Q.animations('bloopa', {
-		move: { frames: [1,0], loop: false, rate: 1/2}, 
-		dieE: { frames: [2], rate:1/2, loop: false, trigger: "deadB" }
+		move: { frames: [1,0], rate: 1/2}, 
+		dieB: { frames: [2], rate:1/2, loop: false, trigger: "bloopaD" }
 	});
 
 	Q.scene("level1",function(stage) {
 		Q.stageTMX("level.tmx",stage);
 
-		var mario = stage.insert(new Q.Mario({ x: 50, y: 530 })); //añadimos a mario
+		var mario = stage.insert(new Q.Mario({ x: 200, y: 530 })); //añadimos a mario
 
-		var goomba = stage.insert(new Q.Goomba({ x: 150, y: 530 }));
+		var goomba = stage.insert(new Q.Goomba({ x: 1000, y: 300 }));
 
 		var bloopa = stage.insert(new Q.Bloopa({ x: 500, y: 530 }));
 		var bloopa = stage.insert(new Q.Bloopa({ x: 400, y: 530 }));
