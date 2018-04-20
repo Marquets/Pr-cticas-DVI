@@ -3,12 +3,12 @@ var game = function() {
 	// the Sprites, Scenes, Input and 2D module. The 2D module
 	// includes the `TileLayer` class as well as the `2d` componet.
 	var Q = window.Q = Quintus()
-		.include("Sprites, Scenes, Input, 2D, Anim, Touch, UI, TMX")
+		.include("Sprites, Scenes, Input, 2D, Anim, Touch, UI, TMX, Audio")
 		// Maximize this game to whatever the size of the browser is
 		.setup({width:320, height:480})
 		// And turn on default input controls and touch input (for UI)
-		.controls().touch();
-		//.enableSound();
+		.controls().touch()
+		.enableSound();
 
 
 
@@ -43,6 +43,11 @@ var game = function() {
 				
 			});*/
 
+			/*this.on("jump", function() {
+				Q.audio.play('jump_small.mp3');
+			});*/
+
+			
 		},
 
 		step: function(p) {
@@ -71,6 +76,8 @@ var game = function() {
 				if (this.p.direction == 'left') {	 //si estoy moviendome a la izquierda
 					this.play("jump_left");
 				}
+				
+
 		    }
 
 
@@ -83,8 +90,8 @@ var game = function() {
 		run_left: { frames: [17,16,15], rate:1/6, loop:false},
 		stand_right: { frames: [0] },
 		stand_left: { frames: [14] },
-		jump_right: { frames: [4], loop: false, rate:1, next: "stand_right" },
-		jump_left: { frames: [18], loop: false, rate:1, next: "stand_left" },
+		jump_right: { frames: [4], loop: false, rate:1, next: "stand_right", trigger: "jump" },
+		jump_left: { frames: [18], loop: false, rate:1, next: "stand_left", trigger: "jump" },
 		dieM: { frames: [12], rate:1, loop: false, trigger: "deadM" }
 	});
 
@@ -112,6 +119,7 @@ var game = function() {
 				if(collision.obj.isA("Mario")) {
 					this.play("dieG");
 					collision.obj.p.vy = -300;
+					Q.audio.play('squish_enemy.mp3');
 				}
 			});
 
@@ -157,6 +165,7 @@ var game = function() {
 				if(collision.obj.isA("Mario")) {
 					this.play("dieB");
 					collision.obj.p.vy = -300;
+					Q.audio.play('squish_enemy.mp3');
 				}
 			});
 
@@ -184,7 +193,10 @@ var game = function() {
 	Q.scene("level1",function(stage) {
 		Q.stageTMX("level.tmx",stage);
 
-		var mario = stage.insert(new Q.Mario({ x: 200, y: 530 })); //añadimos a mario
+		Q.audio.stop();
+	 	Q.audio.play('music_main.mp3',{ loop: true });
+
+		var mario = stage.insert(new Q.Mario({ x: 200, y: 430 })); //añadimos a mario
 
 		var goomba = stage.insert(new Q.Goomba({ x: 1000, y: 300 }));
 
@@ -207,6 +219,8 @@ var game = function() {
 		Q.compileSheets("goomba.png","goomba.json"); // cargamos los sprite del goomba
 		Q.compileSheets("bloopa.png","bloopa.json"); // cargamos los sprite del goomba
     });
+
+    Q.load(["music_die.mp3", "music_main.mp3", "jump_small.mp3", "squish_enemy.mp3"]);
 
 
 };
