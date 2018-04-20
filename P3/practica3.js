@@ -35,7 +35,7 @@ var game = function() {
 			// default input actions (left, right to move, up or action to jump)
 			// It also checks to make sure the player is on a horizontal surface before
 			// letting them jump.
-			this.add('2d, platformerControls');
+			this.add('2d, platformerControls, animation');
 			// Write event handlers to respond hook into behaviors.
 			// hit.sprite is called everytime the player collides with a sprite
 			/*this.on("hit.sprite",function(collision) {
@@ -45,6 +45,7 @@ var game = function() {
 
 			this.on("bump.bottom",function(collision) {
 				if(collision.obj.isA("Goomba")) {
+
 					this.p.vy = -300;					
 				}
 			});
@@ -52,10 +53,46 @@ var game = function() {
 		},
 
 		step: function(p) {
+
+			//reinicio del nivel
 			if(this.p.y > 600){
 				Q.stageScene('level1');
 			}
+
+			// animación del movimiento
+
+			if(this.p.vx > 0) {
+				this.play("run_right");
+			} else if(this.p.vx < 0) {				
+				this.play("run_left");
+			} else {
+				this.play("stand_" + this.p.direction);
+			}
+
+			//animación del salto
+
+			if (this.p.vy < 0){         //si salto
+		    	if (this.p.direction == 'right') {	 //si estoy moviendome a la derecha
+				this.play("jump_right");
+				}
+				if (this.p.direction == 'left') {	 //si estoy moviendome a la izquierda
+					this.play("jump_left");
+				}
+		    }
+
+
 		}
+	});
+
+
+	Q.animations('mario', {
+		run_right: { frames: [3,2,1], rate: 1/6, loop:false, next: "stand_right" }, 
+		run_left: { frames: [17,16,15], rate:1/6, loop:false, next: "stand_left" },
+		stand_right: { frames: [0] },
+		stand_left: { frames: [14] },
+		jump_right: { frames: [4], loop: false, rate:1, next: "stand_right" },
+		jump_left: { frames: [18], loop: false, rate:1, next: "stand_left" },
+		dieM: { frames: [12], rate:1, loop: false, trigger: "deadM" }
 	});
 
 
@@ -68,7 +105,7 @@ var game = function() {
 				vx: 75
 			});
 
-			this.add('2d, aiBounce');
+			this.add('2d, aiBounce, animation');
 
 			this.on("bump.left,bump.right,bump.bottom",function(collision) {
 				if(collision.obj.isA("Mario")) {
@@ -80,19 +117,22 @@ var game = function() {
 			// and give the user a "hop"
 			this.on("bump.top",function(collision) {
 				if(collision.obj.isA("Mario")) {
-				
 					this.destroy();
-					collision.obj.p.vy = -300;
 				}
 			});
 
+			this.play("move");
+
 		},
 
-		/*step: function(p) {
-			if(this.p.vy == 0){
-				this.p.vy = -500;
-			}
-		}*/ 	
+		step: function(p) {
+			
+		} 	
+	});
+
+	Q.animations('goomba', {
+		move: { frames: [1,0], rate: 1/2}, 
+		dieE: { frames: [2], rate:1/2, loop: false}
 	});
 
 	Q.Sprite.extend("Bloopa", {
@@ -104,7 +144,7 @@ var game = function() {
 				vx: 0
 			});
 
-			this.add('2d');
+			this.add('2d, animation');
 
 			this.on("bump.left,bump.right,bump.bottom",function(collision) {
 				if(collision.obj.isA("Mario")) {
@@ -116,7 +156,7 @@ var game = function() {
 			// and give the user a "hop"
 			this.on("bump.top",function(collision) {
 				if(collision.obj.isA("Mario")) {
-				
+					this.play("dieE");
 					this.destroy();
 					collision.obj.p.vy = -300;
 				}
@@ -126,17 +166,23 @@ var game = function() {
 
 		step: function(p) {
 			if(this.p.vy == 0){
-				this.p.vy = -Math.floor(Math.random() * (800 - 300) + 300);
+				this.p.vy = -Math.floor(Math.random() * (800 - 100) + 100);
+				this.play("move");
 			}
 		}	
+	});
+
+	Q.animations('bloopa', {
+		move: { frames: [1,0], loop: false, rate: 1/2}, 
+		dieE: { frames: [2], rate:1/2, loop: false, trigger: "deadB" }
 	});
 
 	Q.scene("level1",function(stage) {
 		Q.stageTMX("level.tmx",stage);
 
-		var mario = stage.insert(new Q.Mario({ x: 150, y: 530 })); //añadimos a mario
+		var mario = stage.insert(new Q.Mario({ x: 50, y: 530 })); //añadimos a mario
 
-		var goomba = stage.insert(new Q.Goomba({ x: 600, y: 530 }));
+		var goomba = stage.insert(new Q.Goomba({ x: 150, y: 530 }));
 
 		var bloopa = stage.insert(new Q.Bloopa({ x: 500, y: 530 }));
 		var bloopa = stage.insert(new Q.Bloopa({ x: 400, y: 530 }));
