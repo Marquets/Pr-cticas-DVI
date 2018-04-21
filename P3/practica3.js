@@ -3,12 +3,12 @@ var game = function() {
 	// the Sprites, Scenes, Input and 2D module. The 2D module
 	// includes the `TileLayer` class as well as the `2d` componet.
 	var Q = window.Q = Quintus()
-		.include("Sprites, Scenes, Input, 2D, Anim, Touch, UI, TMX")
+		.include("Sprites, Scenes, Input, 2D, Anim, Touch, UI, TMX, Audio")
 		// Maximize this game to whatever the size of the browser is
 		.setup({width:320, height:480})
 		// And turn on default input controls and touch input (for UI)
-		.controls().touch();
-		//.enableSound();
+		.controls().touch()
+		.enableSound();
 
 
 
@@ -35,7 +35,7 @@ var game = function() {
 			// default input actions (left, right to move, up or action to jump)
 			// It also checks to make sure the player is on a horizontal surface before
 			// letting them jump.
-			this.add('2d, platformerControls');
+			this.add('2d, platformerControls, animation');
 			// Write event handlers to respond hook into behaviors.
 			// hit.sprite is called everytime the player collides with a sprite
 			/*this.on("hit.sprite",function(collision) {
@@ -43,19 +43,56 @@ var game = function() {
 				
 			});*/
 
-			this.on("bump.bottom",function(collision) {
-				if(collision.obj.isA("Goomba")) {
-					this.p.vy = -300;					
-				}
-			});
+			/*this.on("jump", function() {
+				Q.audio.play('jump_small.mp3');
+			});*/
 
+			
 		},
 
 		step: function(p) {
+
+			//reinicio del nivel
 			if(this.p.y > 600){
 				Q.stageScene('level1');
 			}
-		},
+
+			// animación del movimiento
+
+			if(this.p.vx > 0) {
+				this.play("run_right");
+			} else if(this.p.vx < 0) {				
+				this.play("run_left");
+			} else {
+				this.play("stand_" + this.p.direction);
+			}
+
+			//animación del salto
+
+			if (this.p.vy < 0){         //si salto
+		    	if (this.p.direction == 'right') {	 //si estoy moviendome a la derecha
+				this.play("jump_right");
+				}
+				if (this.p.direction == 'left') {	 //si estoy moviendome a la izquierda
+					this.play("jump_left");
+				}
+				
+
+		    }
+
+
+		}
+	});
+
+
+	Q.animations('mario', {
+		run_right: { frames: [3,2,1], rate: 1/6, loop:false}, 
+		run_left: { frames: [17,16,15], rate:1/6, loop:false},
+		stand_right: { frames: [0] },
+		stand_left: { frames: [14] },
+		jump_right: { frames: [4], loop: false, rate:1, next: "stand_right", trigger: "jump" },
+		jump_left: { frames: [18], loop: false, rate:1, next: "stand_left", trigger: "jump" },
+		dieM: { frames: [12], rate:1, loop: false, trigger: "deadM" }
 	});
 
 
@@ -68,7 +105,7 @@ var game = function() {
 				vx: 75
 			});
 
-			this.add('2d, aiBounce');
+			this.add('2d, aiBounce, animation');
 
 			this.on("bump.left,bump.right,bump.bottom",function(collision) {
 				if(collision.obj.isA("Mario")) {
@@ -82,19 +119,29 @@ var game = function() {
 			// and give the user a "hop"
 			this.on("bump.top",function(collision) {
 				if(collision.obj.isA("Mario")) {
-				
-					this.destroy();
+					this.play("dieG");
 					collision.obj.p.vy = -300;
+					Q.audio.play('squish_enemy.mp3');
 				}
 			});
 
+			this.on("goombaD", function() {
+				//una vez que termine la animacion del goomba aplastado destruimos al goomba
+				this.destroy();
+			});
+
+			this.play("move");
+
 		},
 
-		/*step: function(p) {
-			if(this.p.vy == 0){
-				this.p.vy = -500;
-			}
-		}*/ 	
+		step: function(p) {
+			
+		} 	
+	});
+
+	Q.animations('goomba', {
+		move: { frames: [1,0], rate: 1/2}, 
+		dieG: { frames: [2], rate:1/2, loop: false, trigger: "goombaD"}
 	});
 
 	Q.Sprite.extend("Bloopa", {
@@ -106,7 +153,7 @@ var game = function() {
 				vx: 0
 			});
 
-			this.add('2d');
+			this.add('2d, animation');
 
 			this.on("bump.left,bump.right,bump.bottom",function(collision) {
 				if(collision.obj.isA("Mario")) {
@@ -119,27 +166,42 @@ var game = function() {
 			// and give the user a "hop"
 			this.on("bump.top",function(collision) {
 				if(collision.obj.isA("Mario")) {
-				
-					this.destroy();
+					this.play("dieB");
 					collision.obj.p.vy = -300;
+					Q.audio.play('squish_enemy.mp3');
 				}
 			});
+
+			this.on("bloopaD",function(collision) {
+				this.destroy();
+			});
+
+			this.play("move");
 
 		},
 
 		step: function(p) {
 			if(this.p.vy == 0){
-				this.p.vy = -Math.floor(Math.random() * (800 - 300) + 300);
+				this.p.vy = -Math.floor(Math.random() * (800 - 100) + 100);
+				//this.play("move");
 			}
 		}	
+	});
+
+	Q.animations('bloopa', {
+		move: { frames: [1,0], rate: 1/2}, 
+		dieB: { frames: [2], rate:1/2, loop: false, trigger: "bloopaD" }
 	});
 
 	Q.scene("level1",function(stage) {
 		Q.stageTMX("level.tmx",stage);
 
-		var mario = stage.insert(new Q.Mario({ x: 150, y: 530 })); //añadimos a mario
+		Q.audio.stop();
+	 	Q.audio.play('music_main.mp3',{ loop: true });
 
-		var goomba = stage.insert(new Q.Goomba({ x: 600, y: 530 }));
+		var mario = stage.insert(new Q.Mario({ x: 200, y: 430 })); //añadimos a mario
+
+		var goomba = stage.insert(new Q.Goomba({ x: 1000, y: 300 }));
 
 		var bloopa = stage.insert(new Q.Bloopa({ x: 500, y: 530 }));
 		var bloopa = stage.insert(new Q.Bloopa({ x: 400, y: 530 }));
@@ -160,6 +222,8 @@ var game = function() {
 		Q.compileSheets("goomba.png","goomba.json"); // cargamos los sprite del goomba
 		Q.compileSheets("bloopa.png","bloopa.json"); // cargamos los sprite del goomba
     });
+
+    Q.load(["music_die.mp3", "music_main.mp3", "jump_small.mp3", "squish_enemy.mp3"]);
 
 
 };
