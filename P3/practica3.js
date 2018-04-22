@@ -71,6 +71,7 @@ var game = function() {
 			//animación del salto
 
 			if (this.p.vy < 0){         //si salto
+	
 		    	if (this.p.direction == 'right') {	 //si estoy moviendome a la derecha
 				this.play("jump_right");
 				}
@@ -84,6 +85,39 @@ var game = function() {
 
 		}
 	});
+
+	Q.Sprite.extend("Princess",{
+	// the init constructor is called on creation
+	init: function(p) {
+
+		this._super(p, {
+			sheet: "princess",
+			//ssprite: "princess",
+			//frame: 0,
+			//vx: 0					
+		});	
+
+		this.add('2d');
+
+
+		this.on("bump.left,bump.right,bump.bottom",function(collision) {
+			if(collision.obj.isA("Mario")) {
+				Q.stage().pause();
+				Q.audio.stop();
+				//Q.audio.play('music_level_complete.mp3');
+				Q.stageScene('wonGame',1);
+				//collision.obj.destroy();
+			}
+		});
+
+	},
+
+	step: function(p) {
+			
+	} 	
+
+	});
+
 
 
 	Q.animations('mario', {
@@ -111,6 +145,8 @@ var game = function() {
 			this.on("bump.left,bump.right,bump.bottom",function(collision) {
 				if(collision.obj.isA("Mario")) {
 					Q.stage().pause();
+					Q.audio.stop();
+					Q.audio.play('music_die.mp3');
 					Q.stageScene('endGame',1);
 					
 					//collision.obj.destroy();
@@ -159,6 +195,8 @@ var game = function() {
 			this.on("bump.left,bump.right,bump.bottom",function(collision) {
 				if(collision.obj.isA("Mario")) {
 					Q.stage().pause();
+					Q.audio.stop();
+					Q.audio.play('music_die.mp3');
 					Q.stageScene('endGame',1);
 					//collision.obj.destroy();
 				}
@@ -201,6 +239,7 @@ var game = function() {
 	 	Q.audio.play('music_main.mp3',{ loop: true });
 
 		var mario = stage.insert(new Q.Mario({ x: 200, y: 430 })); //añadimos a mario
+		var princess = stage.insert(new Q.Princess({ x: 2000, y: 430 }));
 
 		var goomba = stage.insert(new Q.Goomba({ x: 1000, y: 300 }));
 
@@ -213,16 +252,13 @@ var game = function() {
 	 	stage.viewport.offsetX=-100;
 	});
 
-	Q.scene('endGame',function(stage) {
+	Q.scene('mainTitle',function(stage) {
 		var container = stage.insert(new Q.UI.Container({
 			x: Q.width/2, y: Q.height/2, fill: "rgba(0,0,0,0.5)"
 		}));
-		var button = container.insert(new Q.UI.Button({ x: 0, y: 0, fill: "#CCCCCC",
-			label: "Play Again" }));
-		//var label = container.insert(new Q.UI.Text({x:10, y: -10 - button.p.h,
-		//	label: stage.options.label }));
-		// When the button is clicked, clear all the stages
-		// and restart the game.
+	
+		var button = container.insert(new Q.UI.Button({ x: 0, y: 0,	asset: "mainTitle.png" }));
+	
 		button.on("click", function(){
 			Q.clearStages();
 			Q.stageScene('level1');
@@ -233,17 +269,66 @@ var game = function() {
 		container.fit(20);
 	});
 
+	Q.scene('endGame',function(stage) {
+		var container = stage.insert(new Q.UI.Container({
+			x: Q.width/2, y: Q.height/2, fill: "rgba(0,0,0,0.5)"
+		}));
+	
+		var button = container.insert(new Q.UI.Button({ x: 0, y: 0, fill: "#CCCCCC",
+			label: "Play Again" }));
+		var label = container.insert(new Q.UI.Text({ label: "Game Over", x:0 , y: -15 - button.p.h }));
+		//var label = container.insert(new Q.UI.Text({x:10, y: -10 - button.p.h,
+		//	label: stage.options.label }));
+		// When the button is clicked, clear all the stages
+		// and restart the game.
+		button.on("click", function(){
+			Q.clearStages();
+			Q.stageScene('mainTitle');
+		});
 
-	Q.loadTMX("level.tmx", function() {  //cargamos el nivel
-		Q.stageScene("level1");
+		// Expand the container to visibily fit it's contents
+		// (with a padding of 20 pixels)
+		container.fit(20);
+	});
+
+	Q.scene('wonGame',function(stage) {
+	
+		var container = stage.insert(new Q.UI.Container({
+			x: Q.width/2, y: Q.height/2, fill: "rgba(0,0,0,0.5)"
+		}));
+		var button = container.insert(new Q.UI.Button({ x: 0, y: 0, fill: "#CCCCCC",
+			label: "Play Again" }));
+		var label = container.insert(new Q.UI.Text({ label: "You won!", x:0 , y: -15 - button.p.h }));
+		//var label = container.insert(new Q.UI.Text({x:10, y: -10 - button.p.h,
+		//	label: stage.options.label }));
+		// When the button is clicked, clear all the stages
+		// and restart the game.
+
+		button.on("click", function(){
+			Q.clearStages();
+			Q.stageScene('mainTitle');
+		});
+
+		// Expand the container to visibily fit it's contents
+		// (with a padding of 20 pixels)
+		container.fit(20);
 	});
 
 
-	Q.load(["mario_small.png", "mario_small.json", "goomba.png", "goomba.json", "bloopa.png", "bloopa.json"], function() {
+
+	Q.loadTMX("level.tmx", function() {  //cargamos el nivel
+		//Q.stageScene("level1");
+		Q.stageScene("mainTitle");
+	});
+
+
+	Q.load(["mario_small.png", "mario_small.json", "goomba.png", "goomba.json", "bloopa.png", "bloopa.json", "princess.png", "mainTitle.png"], function() {
 		Q.compileSheets("mario_small.png","mario_small.json");   //cargamos los sprites de mario
 		Q.compileSheets("goomba.png","goomba.json"); // cargamos los sprite del goomba
 		Q.compileSheets("bloopa.png","bloopa.json"); // cargamos los sprite del goomba
-    });
+		Q.sheet("princess","princess.png", { tilew: 30, tileh: 45 });
+		Q.sheet("mainTitle","mainTitle.png");
+	});
 
     Q.load(["music_die.mp3", "music_main.mp3", "jump_small.mp3", "squish_enemy.mp3"]);
 
