@@ -13,7 +13,11 @@ var game = function() {
 
 
 
-	// ## Player Sprite
+	/* --------------------------------------------------------------------------
+
+								        MARIO
+
+	   -------------------------------------------------------------------------- */
 	// The very basic player sprite, this is just a normal sprite
 	// using the player sprite sheet with default controls added to it.
 	Q.Sprite.extend("Mario",{
@@ -80,21 +84,33 @@ var game = function() {
 		dead: function(){
 			this.trigger("animationM");  // NO FUNCIONA
 			this.play("dieM");
-			Q.stage().pause();
-			Q.audio.stop();
-			Q.audio.play('music_die.mp3');
-			Q.stageScene('endGame',1);
+			if(Q.state.get("vidas") == 0){
+				Q.stage().pause();
+				Q.audio.stop();
+				Q.audio.play('music_die.mp3');
+				Q.stageScene('endGame',1);
+			}else{
+				Q.state.inc("vidas", -1);
+				Q.state.set("monedas", 0);
+	   			Q.stageScene('level1');
+			}
+			
 		},
 
 		step: function(p) {
 
 			//reinicio del nivel
 			if(this.p.y > 600){
-				this.play("dieM");
-				Q.stage().pause();
-				Q.audio.stop();
-				Q.audio.play('music_die.mp3');
-				Q.stageScene('endGame',1);		
+				if(Q.state.get("vidas") == 0){
+					Q.stage().pause();
+					Q.audio.stop();
+					Q.audio.play('music_die.mp3');
+					Q.stageScene('endGame',1);
+				}else{
+					Q.state.inc("vidas", -1);
+					Q.state.set("monedas", 0);
+		   			Q.stageScene('level1');
+				}	
 			}
 
 			// animación del movimiento
@@ -135,6 +151,14 @@ var game = function() {
 		dieM: { frames: [12], rate:1, loop: false, trigger: "deadM" }
 	});
 
+
+	/* --------------------------------------------------------------------------
+
+								        PRINCESA
+
+	   -------------------------------------------------------------------------- */
+
+
 	Q.Sprite.extend("Princess",{
 	// the init constructor is called on creation
 	init: function(p) {
@@ -168,6 +192,13 @@ var game = function() {
 	});
 
 
+	/* --------------------------------------------------------------------------
+
+								        ENEMIGOS
+
+	   -------------------------------------------------------------------------- */
+
+
 	Q.component("defaultEnemy", {
 		added: function() {
 			// Start the ammo out 1/2 filled
@@ -184,20 +215,12 @@ var game = function() {
 
 			dead: function(){
 				this.destroy();
-			},
-
-			die: function() {
-				this.destroy();
-			},
-
-			hit: function() {
-				this.play("dieE");
-				this.p.vx = 0;
-				this.p.vy = 0;
-			} 
+			}
 		}
 	});
 
+
+    /* ---------------------------- GOOMBA --------------------------------- */
 
 	Q.Sprite.extend("Goomba", {
 		init: function(p) {
@@ -209,7 +232,7 @@ var game = function() {
 			});
 
 			this.add('2d, aiBounce, animation, defaultEnemy');
-			this.on("bloopaD", "dead");
+			this.on("goombaD", "dead");
 
 		},
 
@@ -222,6 +245,8 @@ var game = function() {
 		move: { frames: [1,0], rate: 1/2}, 
 		dieG: { frames: [2], rate:1/2, loop: false, trigger: "goombaD"}
 	});
+
+	/* ---------------------------- BLOOPA --------------------------------- */
 
 	Q.Sprite.extend("Bloopa", {
 		init: function(p) {
@@ -249,6 +274,14 @@ var game = function() {
 		dieB: { frames: [2], rate:1/2, loop: false, trigger: "bloopaD" }
 	});
 
+
+	/* --------------------------------------------------------------------------
+
+								        MONEDAS
+
+	   -------------------------------------------------------------------------- */
+
+
 	Q.Sprite.extend("Coin", {
 		init: function(p) {
 			this._super(p, {
@@ -272,7 +305,7 @@ var game = function() {
 		taked: function() {
 			this.destroy();
 			Q.audio.play('coin.mp3');
-			//Q.state.inc("coins",1);
+			Q.state.inc("monedas",1);
 
 		}
 	});
@@ -281,6 +314,13 @@ var game = function() {
 	Q.animations('coin', {
 		shine: { frames: [2,1,0], rate: 1/3}
 	});
+
+
+	/* --------------------------------------------------------------------------
+
+								        NIVEL
+
+	   -------------------------------------------------------------------------- */
 
 
 	Q.scene("level1",function(stage) {
@@ -292,7 +332,7 @@ var game = function() {
 
 	 	/* -------------------------------------------- Entidades ------------------------------------------------  */
 
-		var mario = stage.insert(new Q.Mario({ x: 200, y: 430 })); //añadimos a mario
+		var mario = stage.insert(new Q.Mario({ x: 230, y: 430 })); //añadimos a mario
 		var princess = stage.insert(new Q.Princess({ x: 2000, y: 430 }));
 
 		var goomba = stage.insert(new Q.Goomba({ x: 1000, y: 300 }));
@@ -302,6 +342,10 @@ var game = function() {
 		var bloopa = stage.insert(new Q.Bloopa({ x: 300, y: 530 }));
 
 		var coin1 = stage.insert(new Q.Coin({ x: 130, y: 460 }));
+		var coin2 = stage.insert(new Q.Coin({ x: 120, y: 460 }));
+		var coin3 = stage.insert(new Q.Coin({ x: 110, y: 460 }));
+		var coin4 = stage.insert(new Q.Coin({ x: 100, y: 460 }));
+		var coin5 = stage.insert(new Q.Coin({ x: 90, y: 460 }));
 
 		/* ----------------------------------- Configuracion de la pantalla --------------------------------------- */
 
@@ -310,6 +354,12 @@ var game = function() {
 	 	stage.centerOn(150,380);	
 	 	stage.viewport.offsetX=-100;
 	});
+
+	/* --------------------------------------------------------------------------
+
+								    MENU PRINCIPAL
+
+	   -------------------------------------------------------------------------- */
 
 	Q.scene('mainTitle',function(stage) {
 		var container = stage.insert(new Q.UI.Container({
@@ -320,13 +370,21 @@ var game = function() {
 	
 		button.on("click", function(){
 			Q.clearStages();
+			Q.state.reset({ monedas: 0, vidas: 3 });
 			Q.stageScene('level1');
+			Q.stageScene("HUD", 2);
 		});
 
 		// Expand the container to visibily fit it's contents
 		// (with a padding of 20 pixels)
 		container.fit(20);
 	});
+
+	/* --------------------------------------------------------------------------
+
+								    MENU FINAL
+
+	   -------------------------------------------------------------------------- */
 
 	Q.scene('endGame',function(stage) {
 		var container = stage.insert(new Q.UI.Container({
@@ -342,13 +400,22 @@ var game = function() {
 		// and restart the game.
 		button.on("click", function(){
 			Q.clearStages();
-			Q.stageScene('level1');
+			Q.state.reset({  monedas: 0, vidas: 3 });
+			Q.stageScene('mainTitle');
+			Q.stageScene("HUD", 2);
 		});
 
 		// Expand the container to visibily fit it's contents
 		// (with a padding of 20 pixels)
 		container.fit(20);
 	});
+
+
+	/* --------------------------------------------------------------------------
+
+								    MENU VICTORIA
+
+	   -------------------------------------------------------------------------- */
 
 	Q.scene('wonGame',function(stage) {
 	
@@ -365,7 +432,9 @@ var game = function() {
 
 		button.on("click", function(){
 			Q.clearStages();
-			Q.stageScene('level1');
+			Q.state.reset({ monedas: 0, vidas: 3 });
+			Q.stageScene('mainTitle');
+			Q.stageScene("HUD", 2);
 		});
 
 		// Expand the container to visibily fit it's contents
@@ -373,6 +442,67 @@ var game = function() {
 		container.fit(20);
 	});
 
+
+	/* --------------------------------------------------------------------------
+
+								       HUD
+
+	   -------------------------------------------------------------------------- */
+
+
+	Q.scene("HUD",function(stage) {
+
+		Q.UI.Text.extend("Monedas",{ 
+	        init: function(p) {
+	            this._super({
+	                label: "Monedas: 0",
+	                color: "black",
+	                x: 80,
+	                y: 0
+	            });
+
+	            Q.state.on("change.monedas",this,"incMonedas");
+	        },
+
+	        incMonedas: function(monedas) {
+	            this.p.label = "Monedas: " + monedas;
+	        }
+		});
+
+		Q.UI.Text.extend("Vidas",{ 
+	        init: function(p) {
+	            this._super({
+	                label: "Vidas: 3",
+	                color: "black",
+	                x: 60,
+	                y: 30
+	            });
+
+	            Q.state.on("change.vidas",this,"incVidas");
+	        },
+
+	        incVidas: function(vidas) {
+	            this.p.label = "Vidas: " + vidas;
+	        }
+		});
+
+	    var container = stage.insert(new Q.UI.Container({
+	        x: 0, y: 0, fill: "rgba(0,0,0,0.5)"
+	    }));
+
+	    container.insert(new Q.Monedas());
+	    container.insert(new Q.Vidas());
+
+	});
+
+
+	/* --------------------------------------------------------------------------
+
+								    CARGA DEL NIVEL, 
+								    DE LAS IMAGENES Y
+								     DE LOS SONIDOS
+
+	   -------------------------------------------------------------------------- */
 
 
 	Q.loadTMX("level.tmx", function() {  //cargamos el nivel
