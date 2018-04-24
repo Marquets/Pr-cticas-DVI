@@ -35,27 +35,66 @@ var game = function() {
 			// default input actions (left, right to move, up or action to jump)
 			// It also checks to make sure the player is on a horizontal surface before
 			// letting them jump.
-			this.add('2d, platformerControls, animation');
+			this.add('2d, platformerControls, animation, tween');
 			// Write event handlers to respond hook into behaviors.
 			// hit.sprite is called everytime the player collides with a sprite
-			/*this.on("hit.sprite",function(collision) {
-				// Check the collision, if it's the Tower, you win!
+			this.on("hit.sprite",function(collision) {
 				
-			});*/
+				if(collision.obj.isA("Coin")) {
+					collision.obj.trigger("picked");
+				}
+
+			});
+
+			this.on("hitMario", "dead");
+
+			// If the enemy gets hit on the top, destroy it
+			// and give the user a "hop"
+			this.on("bump.bottom",function(collision) {
+				if(collision.obj.isA("Goomba")) {
+					collision.obj.play("dieG");
+					this.p.vy = -300;
+					Q.audio.play('squish_enemy.mp3');
+				}
+				else if(collision.obj.isA("Bloopa")) {
+					collision.obj.play("dieB");
+					this.p.vy = -300;
+					Q.audio.play('squish_enemy.mp3');
+				}
+			});
+
 
 			/*this.on("jump", function() {
 				Q.audio.play('jump_small.mp3');
 			});*/
 
+			this.on("animationM", function() {
+				this.animate({ x: (this.p.x), y: (this.p.y - 60) }, 2, Q.Easing.Linear, {callback: this.taked });
+			});
+
 			
+
+			
+		},
+
+		dead: function(){
+			this.trigger("animationM");  // NO FUNCIONA
+			this.play("dieM");
+			Q.stage().pause();
+			Q.audio.stop();
+			Q.audio.play('music_die.mp3');
+			Q.stageScene('endGame',1);
 		},
 
 		step: function(p) {
 
 			//reinicio del nivel
 			if(this.p.y > 600){
+				this.play("dieM");
 				Q.stage().pause();
-				Q.stageScene('endGame',1);
+				Q.audio.stop();
+				Q.audio.play('music_die.mp3');
+				Q.stageScene('endGame',1);		
 			}
 
 			// animación del movimiento
@@ -86,6 +125,16 @@ var game = function() {
 		}
 	});
 
+	Q.animations('mario', {
+		run_right: { frames: [3,2,1], rate: 1/6, loop:false}, 
+		run_left: { frames: [17,16,15], rate:1/6, loop:false},
+		stand_right: { frames: [0] },
+		stand_left: { frames: [14] },
+		jump_right: { frames: [4], loop: false, rate:1, next: "stand_right", trigger: "jump" },
+		jump_left: { frames: [18], loop: false, rate:1, next: "stand_left", trigger: "jump" },
+		dieM: { frames: [12], rate:1, loop: false, trigger: "deadM" }
+	});
+
 	Q.Sprite.extend("Princess",{
 	// the init constructor is called on creation
 	init: function(p) {
@@ -104,7 +153,7 @@ var game = function() {
 			if(collision.obj.isA("Mario")) {
 				Q.stage().pause();
 				Q.audio.stop();
-				//Q.audio.play('music_level_complete.mp3');
+				Q.audio.play('music_level_complete.mp3');
 				Q.stageScene('wonGame',1);
 				//collision.obj.destroy();
 			}
@@ -119,15 +168,34 @@ var game = function() {
 	});
 
 
+	Q.component("defaultEnemy", {
+		added: function() {
+			// Start the ammo out 1/2 filled
+			this.entity.on("bump.left,bump.right,bump.bottom",function(collision) {
+				if(collision.obj.isA("Mario")) {
+					collision.obj.trigger("hitMario");
+				}
+			});
 
-	Q.animations('mario', {
-		run_right: { frames: [3,2,1], rate: 1/6, loop:false}, 
-		run_left: { frames: [17,16,15], rate:1/6, loop:false},
-		stand_right: { frames: [0] },
-		stand_left: { frames: [14] },
-		jump_right: { frames: [4], loop: false, rate:1, next: "stand_right", trigger: "jump" },
-		jump_left: { frames: [18], loop: false, rate:1, next: "stand_left", trigger: "jump" },
-		dieM: { frames: [12], rate:1, loop: false, trigger: "deadM" }
+			this.entity.play("move");
+		},
+
+		extend: {
+
+			dead: function(){
+				this.destroy();
+			},
+
+			die: function() {
+				this.destroy();
+			},
+
+			hit: function() {
+				this.play("dieE");
+				this.p.vx = 0;
+				this.p.vy = 0;
+			} 
+		}
 	});
 
 
@@ -140,34 +208,8 @@ var game = function() {
 				vx: 75
 			});
 
-			this.add('2d, aiBounce, animation');
-
-			this.on("bump.left,bump.right,bump.bottom",function(collision) {
-				if(collision.obj.isA("Mario")) {
-					Q.stage().pause();
-					Q.audio.stop();
-					Q.audio.play('music_die.mp3');
-					Q.stageScene('endGame',1);
-					
-					//collision.obj.destroy();
-				}
-			});
-			// If the enemy gets hit on the top, destroy it
-			// and give the user a "hop"
-			this.on("bump.top",function(collision) {
-				if(collision.obj.isA("Mario")) {
-					this.play("dieG");
-					collision.obj.p.vy = -300;
-					Q.audio.play('squish_enemy.mp3');
-				}
-			});
-
-			this.on("goombaD", function() {
-				//una vez que termine la animacion del goomba aplastado destruimos al goomba
-				this.destroy();
-			});
-
-			this.play("move");
+			this.add('2d, aiBounce, animation, defaultEnemy');
+			this.on("bloopaD", "dead");
 
 		},
 
@@ -190,39 +232,14 @@ var game = function() {
 				vx: 0
 			});
 
-			this.add('2d, animation');
-
-			this.on("bump.left,bump.right,bump.bottom",function(collision) {
-				if(collision.obj.isA("Mario")) {
-					Q.stage().pause();
-					Q.audio.stop();
-					Q.audio.play('music_die.mp3');
-					Q.stageScene('endGame',1);
-					//collision.obj.destroy();
-				}
-			});
-			// If the enemy gets hit on the top, destroy it
-			// and give the user a "hop"
-			this.on("bump.top",function(collision) {
-				if(collision.obj.isA("Mario")) {
-					this.play("dieB");
-					collision.obj.p.vy = -300;
-					Q.audio.play('squish_enemy.mp3');
-				}
-			});
-
-			this.on("bloopaD",function(collision) {
-				this.destroy();
-			});
-
-			this.play("move");
+			this.add('2d, animation, defaultEnemy');
+			this.on("bloopaD", "dead");
 
 		},
 
 		step: function(p) {
 			if(this.p.vy == 0){
 				this.p.vy = -Math.floor(Math.random() * (800 - 100) + 100);
-				//this.play("move");
 			}
 		}	
 	});
@@ -232,11 +249,48 @@ var game = function() {
 		dieB: { frames: [2], rate:1/2, loop: false, trigger: "bloopaD" }
 	});
 
+	Q.Sprite.extend("Coin", {
+		init: function(p) {
+			this._super(p, {
+				sheet: "coin",
+				sprite: "coin",
+				frame: 2,
+				gravity: 0
+			});
+
+			this.add('2d, animation, tween');
+
+			this.on("picked", "animated");  //cuando Mario coja la moneda saltará este evento
+
+			this.play("shine");				 
+		},
+
+		animated: function() {
+			this.animate({ x: (this.p.x), y: (this.p.y - 60) }, 2, Q.Easing.Linear, {callback: this.taked }); //una vez animada la moneda llamo a la
+		},																												  //función que la eliminará
+
+		taked: function() {
+			this.destroy();
+			Q.audio.play('coin.mp3');
+			//Q.state.inc("coins",1);
+
+		}
+	});
+
+
+	Q.animations('coin', {
+		shine: { frames: [2,1,0], rate: 1/3}
+	});
+
+
 	Q.scene("level1",function(stage) {
 		Q.stageTMX("level.tmx",stage);
 
 		Q.audio.stop();
 	 	Q.audio.play('music_main.mp3',{ loop: true });
+
+
+	 	/* -------------------------------------------- Entidades ------------------------------------------------  */
 
 		var mario = stage.insert(new Q.Mario({ x: 200, y: 430 })); //añadimos a mario
 		var princess = stage.insert(new Q.Princess({ x: 2000, y: 430 }));
@@ -246,6 +300,11 @@ var game = function() {
 		var bloopa = stage.insert(new Q.Bloopa({ x: 500, y: 530 }));
 		var bloopa = stage.insert(new Q.Bloopa({ x: 400, y: 530 }));
 		var bloopa = stage.insert(new Q.Bloopa({ x: 300, y: 530 }));
+
+		var coin1 = stage.insert(new Q.Coin({ x: 130, y: 460 }));
+
+		/* ----------------------------------- Configuracion de la pantalla --------------------------------------- */
+
 
 		stage.add("viewport").follow(mario,{ x: true, y: false }); //seguimos a mario
 	 	stage.centerOn(150,380);	
@@ -283,7 +342,7 @@ var game = function() {
 		// and restart the game.
 		button.on("click", function(){
 			Q.clearStages();
-			Q.stageScene('mainTitle');
+			Q.stageScene('level1');
 		});
 
 		// Expand the container to visibily fit it's contents
@@ -306,7 +365,7 @@ var game = function() {
 
 		button.on("click", function(){
 			Q.clearStages();
-			Q.stageScene('mainTitle');
+			Q.stageScene('level1');
 		});
 
 		// Expand the container to visibily fit it's contents
@@ -322,15 +381,16 @@ var game = function() {
 	});
 
 
-	Q.load(["mario_small.png", "mario_small.json", "goomba.png", "goomba.json", "bloopa.png", "bloopa.json", "princess.png", "mainTitle.png"], function() {
+	Q.load(["mario_small.png", "mario_small.json", "goomba.png", "goomba.json", "bloopa.png", "bloopa.json", "princess.png", "coin.png", "coin.json", "mainTitle.png"], function() {
 		Q.compileSheets("mario_small.png","mario_small.json");   //cargamos los sprites de mario
-		Q.compileSheets("goomba.png","goomba.json"); // cargamos los sprite del goomba
-		Q.compileSheets("bloopa.png","bloopa.json"); // cargamos los sprite del goomba
+		Q.compileSheets("goomba.png","goomba.json"); // cargamos los sprites del goomba
+		Q.compileSheets("bloopa.png","bloopa.json"); // cargamos los sprites del bloopa
+		Q.compileSheets("coin.png","coin.json"); //cargamos los sprites de la moneda
 		Q.sheet("princess","princess.png", { tilew: 30, tileh: 45 });
 		Q.sheet("mainTitle","mainTitle.png");
 	});
 
-    Q.load(["music_die.mp3", "music_main.mp3", "jump_small.mp3", "squish_enemy.mp3"]);
+    Q.load(["music_die.mp3", "music_main.mp3", "jump_small.mp3", "squish_enemy.mp3", "coin.mp3", "music_level_complete.mp3"]);
 
 
 };
