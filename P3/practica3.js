@@ -117,46 +117,46 @@ var game = function() {
 
 		step: function(p) {
 			if(this.p.dead === false){
+
+				var x = this.p.x;  //3967
+				var y = this.p.y;  //2704
+
 				//reinicio del nivel
 				if(this.p.y > 3100){
 					this.p.dead = true;		
 					Q.audio.stop();
 					Q.audio.play('music_die.mp3');
 					this.play("dieM");
+				}else{
+					if(this.p.vx > 0) {
+						this.play("run_right");
+					} else if(this.p.vx < 0) {				
+						this.play("run_left");
+					} else {
+						this.play("stand_" + this.p.direction);
+					}
+
+					//animación del salto
+
+					if (this.p.vy < 0){         //si salto				
+				    	if (this.p.direction == 'right') {	 //si estoy moviendome a la derecha
+							this.play("jump_right");
+										
+						}
+						if (this.p.direction == 'left') {	 //si estoy moviendome a la izquierda
+							this.play("jump_left");
+						}
+						if(this.p.saltando === false){
+							this.p.saltando = true;
+							this.p.gravity = 0.4;	
+							Q.audio.play('jump_small.mp3');
+						}
+				    }
+
+				    if(this.p.vy > 0){
+				    	this.p.gravity = 1;
+				    }
 				}
-
-				// animación del movimiento
-				var x = this.p.x;  //3967
-				var y = this.p.y;  //2704
-
-				if(this.p.vx > 0) {
-					this.play("run_right");
-				} else if(this.p.vx < 0) {				
-					this.play("run_left");
-				} else {
-					this.play("stand_" + this.p.direction);
-				}
-
-				//animación del salto
-
-				if (this.p.vy < 0){         //si salto				
-			    	if (this.p.direction == 'right') {	 //si estoy moviendome a la derecha
-						this.play("jump_right");
-									
-					}
-					if (this.p.direction == 'left') {	 //si estoy moviendome a la izquierda
-						this.play("jump_left");
-					}
-					if(this.p.saltando === false){
-						this.p.saltando = true;
-						this.p.gravity = 0.4;	
-						Q.audio.play('jump_small.mp3');
-					}
-			    }
-
-			    if(this.p.vy > 0){
-			    	this.p.gravity = 1;
-			    }
 			}
 
 		}
@@ -369,8 +369,13 @@ var game = function() {
 		var bloopa1 = stage.insert(new Q.Bloopa({ x: 1577, y: 2772 }));
 		var bloopa1 = stage.insert(new Q.Bloopa({ x: 1757, y: 2772 }));
 
+		var bloopa1 = stage.insert(new Q.Bloopa({ x: 2969, y: 2704 }));
+		var bloopa1 = stage.insert(new Q.Bloopa({ x: 3142, y: 2704 }));		
+
 		var bloopa1 = stage.insert(new Q.Bloopa({ x: 2364, y: 2670 }));
 		var bloopa1 = stage.insert(new Q.Bloopa({ x: 2430, y: 2670 }));
+		var bloopa1 = stage.insert(new Q.Bloopa({ x: 2632, y: 2670 }));
+		var bloopa1 = stage.insert(new Q.Bloopa({ x: 2158, y: 2670 }));
 		var goomba1 = stage.insert(new Q.Goomba({ x: 2164, y: 2772 }));
 		var goomba2 = stage.insert(new Q.Goomba({ x: 2364, y: 2772 }));
 		var goomba3 = stage.insert(new Q.Goomba({ x: 2430, y: 2772 }));
@@ -380,23 +385,24 @@ var game = function() {
 		var coin1 = stage.insert(new Q.Coin({ x: 323, y: 2750 }));
 		var coin1 = stage.insert(new Q.Coin({ x: 288, y: 2750 }));
 
-		var coin1 = stage.insert(new Q.Coin({ x: 867, y: 2750 }));
-		var coin1 = stage.insert(new Q.Coin({ x: 902, y: 2750 }));
-		/*var goomba = stage.insert(new Q.Goomba({ x: 1000, y: 2704 }));
+		var coin1 = stage.insert(new Q.Coin({ x: 519, y: 2750 }));
+		var coin1 = stage.insert(new Q.Coin({ x: 667, y: 2750 }));
 
-		var bloopa = stage.insert(new Q.Bloopa({ x: 500, y: 530 }));
-		var bloopa = stage.insert(new Q.Bloopa({ x: 400, y: 530 }));
-		var bloopa = stage.insert(new Q.Bloopa({ x: 300, y: 530 }));
+		var coin1 = stage.insert(new Q.Coin({ x: 867, y: 2700 }));
+		var coin1 = stage.insert(new Q.Coin({ x: 902, y: 2700 }));
 
-		var x = this.p.x;  //3967
-				var y = this.p.y;  //2704
+		var coin1 = stage.insert(new Q.Coin({ x: 1641, y: 2665 }));
+		var coin1 = stage.insert(new Q.Coin({ x: 1717, y: 2665 }));
 
-		var coin1 = stage.insert(new Q.Coin({ x: 130, y: 460 }));
-		var coin2 = stage.insert(new Q.Coin({ x: 120, y: 460 }));
-		var coin3 = stage.insert(new Q.Coin({ x: 110, y: 460 }));
-		var coin4 = stage.insert(new Q.Coin({ x: 100, y: 460 }));
-		var coin5 = stage.insert(new Q.Coin({ x: 90, y: 460 }));*/
+		var coin1 = stage.insert(new Q.Coin({ x: 2220, y: 2600 }));
+		var coin1 = stage.insert(new Q.Coin({ x: 2260, y: 2600 }));
 
+		var coin1 = stage.insert(new Q.Coin({ x: 2533, y: 2600 }));
+		var coin1 = stage.insert(new Q.Coin({ x: 2564, y: 2600 }));
+
+		var coin1 = stage.insert(new Q.Coin({ x: 3726, y: 2398 }));
+
+	
 		/* ----------------------------------- Configuracion de la pantalla --------------------------------------- */
 
 
@@ -474,7 +480,11 @@ var game = function() {
 		}));
 		var button = container.insert(new Q.UI.Button({ x: 0, y: 0, fill: "#CCCCCC",
 			label: "Play Again" }));
-		var label = container.insert(new Q.UI.Text({ label: "You won!", x:0 , y: -15 - button.p.h }));
+		var monedasCogidas = Q.state.get("monedas");
+		var monedasDejadas = 13 - monedasCogidas;
+		var texto = new Q.UI.Text({ label: "Ganasté!! Cogiste " + monedasCogidas + " de 13 monedas.", x:0 , y: -15 - button.p.h ,family: "Arial", color: "white", size: 16});
+
+		var label = container.insert(texto);
 		//var label = container.insert(new Q.UI.Text({x:10, y: -10 - button.p.h,
 		//	label: stage.options.label }));
 		// When the button is clicked, clear all the stages
