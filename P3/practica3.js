@@ -426,7 +426,7 @@ var game = function() {
 	
 		button.on("click", function(){
 			Q.clearStages();
-			Q.state.reset({ monedas: 0, vidas: 3 });
+			Q.state.reset({ monedas: 0, vidas: 5 });
 			Q.stageScene('level1');
 			Q.stageScene("HUD", 2);
 		});
@@ -456,7 +456,7 @@ var game = function() {
 		// and restart the game.
 		button.on("click", function(){
 			Q.clearStages();
-			Q.state.reset({  monedas: 0, vidas: 3 });
+			Q.state.reset({  monedas: 0, vidas: 5 });
 			Q.stageScene('mainTitle');
 			Q.stageScene("HUD", 2);
 		});
@@ -482,7 +482,7 @@ var game = function() {
 			label: "Play Again" }));
 		var monedasCogidas = Q.state.get("monedas");
 		var monedasDejadas = 13 - monedasCogidas;
-		var texto = new Q.UI.Text({ label: "Ganasté!! Cogiste " + monedasCogidas + " de 13 monedas.", x:0 , y: -15 - button.p.h ,family: "Arial", color: "white", size: 16});
+		var texto = new Q.UI.Text({ label: "Ganasté!! Te faltaron " + monedasDejadas + " monedas.", x:0 , y: -15 - button.p.h ,family: "Arial", color: "white", size: 16});
 
 		var label = container.insert(texto);
 		//var label = container.insert(new Q.UI.Text({x:10, y: -10 - button.p.h,
@@ -492,7 +492,7 @@ var game = function() {
 
 		button.on("click", function(){
 			Q.clearStages();
-			Q.state.reset({ monedas: 0, vidas: 3 });
+			Q.state.reset({ monedas: 0, vidas: 5 });
 			Q.stageScene('mainTitle');
 			Q.stageScene("HUD", 2);
 		});
